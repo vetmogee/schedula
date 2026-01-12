@@ -2,12 +2,12 @@
 
 import { useState, useTransition } from "react"
 import Link from "next/link"
-import { registerCustomerAction } from "@/app/actions/auth"
+import { registerSalonAction } from "@/app/actions/auth"
 import { Button } from "@/app/_components/ui/button"
 import { Input } from "@/app/_components/ui/input"
 import { Label } from "@/app/_components/ui/label"
 
-export default function CustomerRegisterPage() {
+export default function SalonRegisterPage() {
   const [errors, setErrors] = useState<Record<string, string[]>>({})
   const [isPending, startTransition] = useTransition()
 
@@ -15,7 +15,7 @@ export default function CustomerRegisterPage() {
     setErrors({})
 
     startTransition(async () => {
-      const res = await registerCustomerAction(formData)
+      const res = await registerSalonAction(formData)
       if (!res.ok) {
         setErrors(res.errors || {})
         return
@@ -27,15 +27,15 @@ export default function CustomerRegisterPage() {
   return (
     <div className="mx-auto h-screen py-20 bg-gradient-to-br from-[#ffb5c2] to-[#fdd7de] w-full flex justify-center items-center">
       <div className="max-w-md bg-white bg-opacity-70 backdrop-blur-md rounded-lg p-8 shadow-md w-full">
-        <h1 className="text-2xl font-semibold mb-6">Customer Registration</h1>
+        <h1 className="text-2xl font-semibold mb-6">Salon registration</h1>
 
         <form action={onSubmit} className="space-y-3">
           <div className="space-y-2 my-5">
-            <Label htmlFor="name">Name</Label>
+            <Label htmlFor="name">Salon name</Label>
             <Input
               id="name"
               name="name"
-              placeholder="Your name"
+              placeholder="Your salon name"
               required
             />
             {errors.name?.[0] && (
@@ -72,7 +72,7 @@ export default function CustomerRegisterPage() {
           </div>
 
           <Button type="submit" disabled={isPending} className="w-full">
-            {isPending ? "Creating..." : "Create account"}
+            {isPending ? "Creating..." : "Create salon account"}
           </Button>
         </form>
 
@@ -86,15 +86,16 @@ export default function CustomerRegisterPage() {
           </Link>
         </div>
         <div className="mt-4 text-center text-sm">
-          <span className="text-gray-600">Are you a salon? </span>
+          <span className="text-gray-600">Are you a customer? </span>
           <Link
-            href="/salon-register"
+            href="/register"
             className="text-pink-600 hover:text-pink-700 font-medium underline"
           >
-            Resgiter as Salon
+            Register as Customer
           </Link>
         </div>
       </div>
     </div>
   )
 }
+

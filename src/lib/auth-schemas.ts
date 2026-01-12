@@ -1,14 +1,12 @@
 import { z } from "zod"
 
 export const registerSchema = z.object({
-  fullName: z.string().trim().min(1, "Full name is required").max(100),
-  username: z
+  name: z
     .string()
     .trim()
-    .toLowerCase()
     .min(3, "Username must be at least 3 characters")
     .max(30)
-    .regex(/^[a-z0-9_]+$/, "Only lowercase letters, numbers, and underscores"),
+    .regex(/^[A-Za-z0-9_ ]+$/, "Only letters, numbers, spaces, and underscores"),
   email: z
     .string()
     .trim()
@@ -33,5 +31,11 @@ export const loginSchema = z.object({
 })
 
 export type LoginInput = z.infer<typeof loginSchema>
+
+export const resetPasswordSchema = z.object({
+  email: z.string().trim().toLowerCase().email("Invalid email address"),
+})
+
+export type ResetPasswordInput = z.infer<typeof resetPasswordSchema>
 
 

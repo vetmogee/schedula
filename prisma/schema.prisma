@@ -9,11 +9,102 @@ datasource db {
 }
 
 model User {
-  id             String   @id @default(cuid())
-  email          String   @unique
-  fullName       String
-  username       String   @unique
-  hashedPassword String
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
+  id              String            @id @db.Uuid
+  role            UserRole
+  name            String?
+  createdAt       DateTime          @default(now())
+  email           String?           @unique
+  bookings        Booking[]
+  salon           Salon?
+  ServiceCategory ServiceCategory[]
+
+  @@map("users")
+}
+
+model Salon {
+  id          Int               @id @default(autoincrement())
+  userId      String            @unique @db.Uuid
+  name        String
+  description String?
+  address     String?
+  city        String?
+  phone       BigInt?
+  currency    String?           @default("USD")
+  closingTime DateTime?         @db.Time(6)
+  openingTime DateTime?         @db.Time(6)
+  bookings    Booking[]
+  employees   Employee[]
+  user        User              @relation(fields: [userId], references: [id])
+  services    Service[]
+  categories  ServiceCategory[]
+
+  @@map("salons")
+}
+
+model ServiceCategory {
+  id       Int       @id @default(autoincrement())
+  name     String
+  userId   String    @db.Uuid
+  user     User      @relation(fields: [userId], references: [id])
+  position Int       @default(0)
+  services Service[]
+  Salon    Salon?    @relation(fields: [salonId], references: [id])
+  salonId  Int?
+
+  @@map("service_categories")
+}
+
+model Service {
+  id              Int              @id @default(autoincrement())
+  name            String
+  price           Float
+  duration        DateTime         @db.Time(6)
+  categoryId      Int
+  salonId         Int
+  position        Int              @default(0)
+  bookingServices BookingService[]
+  category        ServiceCategory  @relation(fields: [categoryId], references: [id])
+  salon           Salon            @relation(fields: [salonId], references: [id])
+
+  @@map("services")
+}
+
+model Employee {
+  id       Int       @id @default(autoincrement())
+  name     String
+  salonId  Int
+  bookings Booking[]
+  salon    Salon     @relation(fields: [salonId], references: [id])
+
+  @@map("employees")
+}
+
+model Booking {
+  id              Int              @id @default(autoincrement())
+  date            DateTime         @db.Timestamp(6)
+  salonId         Int
+  employeeId      Int
+  customerId      String           @db.Uuid
+  customer        User             @relation(fields: [customerId], references: [id])
+  employee        Employee         @relation(fields: [employeeId], references: [id])
+  salon           Salon            @relation(fields: [salonId], references: [id])
+  bookingServices BookingService[]
+
+  @@map("bookings")
+}
+
+model BookingService {
+  id        Int     @id @default(autoincrement())
+  bookingId Int
+  serviceId Int
+  booking   Booking @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  service   Service @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+
+  @@unique([bookingId, serviceId])
+  @@map("booking_services")
+}
+
+enum UserRole {
+  CUSTOMER
+  SALON
 }

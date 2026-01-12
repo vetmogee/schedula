@@ -1,149 +1,178 @@
-"use client"
+"use client";
 
-import { useEffect, useRef, useState } from "react"
+import Link from "next/link";
+import { useState } from "react";
 
-export default function Navbar() {
-  const lastScrollYRef = useRef(0)
-  const [hiddenOnDown, setHiddenOnDown] = useState(false)
-  const [isBusinessOpen, setIsBusinessOpen] = useState(false)
-  const [isUserOpen, setIsUserOpen] = useState(false)
-  const businessRef = useRef<HTMLDivElement | null>(null)
-  const userRef = useRef<HTMLDivElement | null>(null)
-  const businessHideTimeoutRef = useRef<number | null>(null)
-  const userHideTimeoutRef = useRef<number | null>(null)
+type CurrentUser = {
+  name: string | null;
+  role: "CUSTOMER" | "SALON";
+} | null;
 
-  useEffect(() => {
-    const handleScroll = () => {
-      const currentY = window.scrollY || 0
-      // Hide when scrolling down, show when scrolling up
-      if (currentY > lastScrollYRef.current) {
-        setHiddenOnDown(true)
-      } else if (currentY < lastScrollYRef.current) {
-        setHiddenOnDown(false)
-      }
-      lastScrollYRef.current = currentY
-    }
+function Dropdown({
+  label,
+  loginHref,
+  registerHref,
+}: {
+  label: string;
+  loginHref: string;
+  registerHref: string;
+}) {
+  const [open, setOpen] = useState(false);
+  let timeout: NodeJS.Timeout;
 
-    window.addEventListener("scroll", handleScroll, { passive: true })
-    return () => window.removeEventListener("scroll", handleScroll)
-  }, [])
+  const openMenu = () => {
+    clearTimeout(timeout);
+    setOpen(true);
+  };
 
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      const target = event.target as Node
-      if (
-        businessRef.current && !businessRef.current.contains(target) &&
-        userRef.current && !userRef.current.contains(target)
-      ) {
-        setIsBusinessOpen(false)
-        setIsUserOpen(false)
-      }
-    }
-
-    document.addEventListener("mousedown", handleClickOutside)
-    return () => document.removeEventListener("mousedown", handleClickOutside)
-  }, [])
-
-  const openBusiness = () => {
-    if (businessHideTimeoutRef.current) {
-      clearTimeout(businessHideTimeoutRef.current)
-      businessHideTimeoutRef.current = null
-    }
-    setIsBusinessOpen(true)
-    setIsUserOpen(false)
-  }
-
-  const closeBusinessWithDelay = () => {
-    if (businessHideTimeoutRef.current) return
-    businessHideTimeoutRef.current = window.setTimeout(() => {
-      setIsBusinessOpen(false)
-      businessHideTimeoutRef.current = null
-    }, 250)
-  }
-
-  const openUser = () => {
-    if (userHideTimeoutRef.current) {
-      clearTimeout(userHideTimeoutRef.current)
-      userHideTimeoutRef.current = null
-    }
-    setIsUserOpen(true)
-    setIsBusinessOpen(false)
-  }
-
-  const closeUserWithDelay = () => {
-    if (userHideTimeoutRef.current) return
-    userHideTimeoutRef.current = window.setTimeout(() => {
-      setIsUserOpen(false)
-      userHideTimeoutRef.current = null
-    }, 250)
-  }
+  const closeMenu = () => {
+    timeout = setTimeout(() => {
+      setOpen(false);
+    }, 120); // 👈 delay (tweak 80–200ms)
+  };
 
   return (
     <div
-      className={
-        "fixed top-0 left-0 right-0 z-50 transition-transform duration-200 will-change-transform " +
-        (hiddenOnDown ? "-translate-y-full" : "translate-y-0")
-      }
+      className="relative"
+      onMouseEnter={openMenu}
+      onMouseLeave={closeMenu}
     >
-      <div className="grid grid-cols-3 items-center text-center w-full gap-4 *:p-5 *:px-10 bg-[#ffb3c6] backdrop-blur ">
-        {/* left side */}
-        <div className="justify-self-start font-bold">
-          Schedula
-        </div>
+      <button className="font-medium hover:text-black/70 transition">
+        {label}
+      </button>
 
-        {/* center buttons */}
-        <div className="w-full flex flex-row justify-center gap-10">
-          <div>Home</div>
-          <div>Studios</div>
-          <div>Contact</div>
+      {open && (
+        <div className="absolute right-0 mt-2 w-36 rounded-lg bg-white text-black shadow-lg overflow-hidden">
+          <Link href={loginHref} className="block px-4 py-2 hover:bg-gray-100">
+            Login
+          </Link>
+          <Link href={registerHref} className="block px-4 py-2 hover:bg-gray-100">
+            Register
+          </Link>
         </div>
-
-         {/* RIGHT SIDE */}
-        <div className="flex flex-row  justify-self-end relative">
-          {/* login */}
-          <div className="relative px-10">
-            <div className="cursor-pointer">
-              <a href="/login">Log in</a>
-            </div>
-          </div>
-
-          {/* register */}
-          <div
-            className="relative px-10"
-            ref={userRef}
-            onMouseEnter={openUser}
-            onMouseLeave={closeUserWithDelay}
-          >
-            <div
-              className="cursor-pointer"
-              role="button"
-              aria-haspopup="menu"
-              aria-expanded={isUserOpen}
-              onClick={() => {
-                if (isUserOpen) {
-                  setIsUserOpen(false)
-                } else {
-                  openUser()
-                }
-              }}
-            >
-              Register
-            </div>
-            <div
-              onClick={(e) => e.stopPropagation()}
-              className={
-                "absolute right-0 mt-2 w-30 bg-white text-black rounded-lg shadow-lg z-50 transition-all duration-200 -translate-x-2 translate-y-0 " +
-                (isUserOpen
-                  ? "opacity-100 pointer-events-auto"
-                  : "opacity-0 pointer-events-none")
-              }
-            >
-              <div className="px-4 py-2 hover:bg-gray-100 cursor-pointer"><a href="/login">User</a></div>
-              <div className="px-4 py-2 hover:bg-gray-100 cursor-pointer"><a href="/register">Business</a></div>
-            </div>
-          </div>
-        </div>
-      </div>
+      )}
     </div>
-  )
+  );
+}
+
+export default function Navbar({ currentUser }: { currentUser?: CurrentUser }) {
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
+  let userTimeout: NodeJS.Timeout;
+
+  const openUserMenu = () => {
+    clearTimeout(userTimeout);
+    setUserMenuOpen(true);
+  };
+
+  const closeUserMenu = () => {
+    userTimeout = setTimeout(() => {
+      setUserMenuOpen(false);
+    }, 120);
+  };
+  return (
+    <nav className="w-full h-16 px-8 flex items-center justify-between border-b bg-[#ffb3c6] backdrop-blur text-black">
+      {/* Left */}
+      <Link 
+        href={currentUser && currentUser.role === "SALON" ? "/dashboard" : "/"} 
+        className="text-xl font-bold tracking-wide"
+      >
+        schedula
+      </Link>
+
+      {/* Center – hidden for logged-in salon users */}
+      {!(currentUser && currentUser.role === "SALON") && (
+        <div className="flex gap-8 font-medium">
+          <Link href="/" className="hover:text-black/70 transition">
+            Home
+          </Link>
+          <Link href="/salons" className="hover:text-black/70 transition">
+            Salons
+          </Link>
+          <Link href="/contact" className="hover:text-black/70 transition">
+            Contact
+          </Link>
+        </div>
+      )}
+
+      {/* Right */}
+      <div className="flex gap-6 items-center">
+        {currentUser ? (
+          <div
+            className="relative"
+            onMouseEnter={openUserMenu}
+            onMouseLeave={closeUserMenu}
+          >
+            <button className="font-medium flex items-center gap-2 hover:text-black/70 transition">
+              <span>{currentUser.name ?? "User"}</span>
+              <span className="uppercase text-xs px-2 py-1 rounded-full bg-white/70 text-black">
+                {currentUser.role}
+              </span>
+            </button>
+
+            {userMenuOpen && (
+              <div className="absolute right-0 mt-2 w-44 rounded-lg bg-white text-black shadow-lg overflow-hidden">
+                {currentUser.role === "CUSTOMER" && (
+                  <Link
+                    href="/user"
+                    className="block px-4 py-2 hover:bg-gray-100 text-left w-full"
+                  >
+                    My Bookings
+                  </Link>
+                )}
+                {currentUser.role === "SALON" && (
+                  <Link
+                    href="/dashboard"
+                    className="block px-4 py-2 hover:bg-gray-100 text-left w-full"
+                  >
+                    Dashboard
+                  </Link>
+                )}
+                {currentUser.role === "SALON" && (
+                  <Link
+                    href="/calendar"
+                    className="block px-4 py-2 hover:bg-gray-100 text-left w-full"
+                  >
+                    Calendar
+                  </Link>
+                )}
+                {currentUser.role === "SALON" && (
+                  <Link
+                    href="/services"
+                    className="block px-4 py-2 hover:bg-gray-100 text-left w-full"
+                  >
+                    Services
+                  </Link>
+                )}
+                <Link
+                  href="/settings"
+                  className="block px-4 py-2 hover:bg-gray-100 text-left w-full"
+                >
+                  Settings
+                </Link>
+                <a
+                  href="/logout"
+                  className="block px-4 py-2 hover:bg-gray-100 text-left w-full"
+                >
+                  Logout
+                </a>
+              </div>
+            )}
+          </div>
+        ) : (
+          <>
+            <Dropdown
+              label="Customer"
+              loginHref="/login"
+              registerHref="/register"
+            />
+            <Dropdown
+              label="Business"
+              loginHref="/login"
+              registerHref="/salon-register"
+            />
+          </>
+        )}
+      </div>
+    </nav>
+  );
 }
