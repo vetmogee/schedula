@@ -18,7 +18,8 @@ type Props = {
 };
 
 export function ServiceSelectionWrapper({ services, currency }: Props) {
-  const handleServicesChange = () => {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const handleServicesChange = (_selectedServices: Service[]) => {
     // Handle selected services - can be extended to save to state or make booking
   };
 
