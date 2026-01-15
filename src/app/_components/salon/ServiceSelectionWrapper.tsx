@@ -18,7 +18,7 @@ type Props = {
 };
 
 export function ServiceSelectionWrapper({ services, currency }: Props) {
-  const handleServicesChange = (_selectedServices: Service[]) => {
+  const handleServicesChange = () => {
     // Handle selected services - can be extended to save to state or make booking
   };
 
