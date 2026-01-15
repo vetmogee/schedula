@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Button } from "@/app/_components/ui/button";
 import { ReservationModal } from "./ReservationModal";
+import { toast } from "sonner";
 
 type Service = {
   id: number;
@@ -36,15 +37,27 @@ type Props = {
   closingTime: string | null;
   bookings: Booking[];
   salonId: number;
+  currentUser: {
+    id: string;
+    role: "CUSTOMER" | "SALON";
+  } | null;
 };
 
-export function ReservationButton({ services, employees, currency, openingTime, closingTime, bookings, salonId }: Props) {
+export function ReservationButton({ services, employees, currency, openingTime, closingTime, bookings, salonId, currentUser }: Props) {
   const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const handleOpenModal = () => {
+    if (!currentUser || currentUser.role !== "CUSTOMER") {
+      toast.error("Please log in to create reservation");
+      return;
+    }
+    setIsModalOpen(true);
+  };
 
   return (
     <>
       <Button
-        onClick={() => setIsModalOpen(true)}
+        onClick={handleOpenModal}
         className="w-full bg-black hover:bg-gray-700 text-white font-semibold py-6 text-lg"
       >
         Create Reservation

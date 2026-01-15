@@ -1,16 +1,37 @@
 "use client";
 
 import { Fragment, useEffect, useMemo, useState } from "react";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { DateNavigation } from "./DateNavigation";
+import { CalendarEvent } from "./CalendarEvent";
+import { BookingDetailsModal } from "./BookingDetailsModal";
 
 type Employee = {
   id: number;
   name: string;
 };
 
+type Booking = {
+  id: number;
+  date: Date;
+  services: {
+    name: string;
+    duration: Date;
+  }[];
+  employee: {
+    id: number;
+    name: string;
+  } | null;
+  customer: {
+    name: string | null;
+  };
+};
+
 type Props = {
   openingTime: string | null;
   closingTime: string | null;
   employees: Employee[];
+  bookings?: Booking[];
 };
 
 type TimeSlot = {
@@ -31,11 +52,21 @@ function minutesToLabel(totalMinutes: number): string {
   return `${h.toString().padStart(2, "0")}:${m.toString().padStart(2, "0")}`;
 }
 
-export function SalonCalendar({
+export function CalendarSalon({
   openingTime,
   closingTime,
   employees,
+  bookings = [],
 }: Props) {
+  const [selectedDate, setSelectedDate] = useState<Date>(() => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    return today;
+  });
+  const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const isMobile = useIsMobile();
+
   // Fallback to typical 9–17 if not configured or invalid
   const [openMinutes, closeMinutes] = useMemo(() => {
     const open = parseTimeToMinutes(openingTime) ?? 9 * 60;
@@ -60,6 +91,7 @@ export function SalonCalendar({
 
   const totalMinutes = closeMinutes - openMinutes;
 
+
   const [nowMinutesFromOpen, setNowMinutesFromOpen] = useState<number | null>(
     null,
   );
@@ -67,6 +99,17 @@ export function SalonCalendar({
   useEffect(() => {
     function updateNow() {
       const now = new Date();
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const selectedDateOnly = new Date(selectedDate);
+      selectedDateOnly.setHours(0, 0, 0, 0);
+
+      // Only show current time indicator if viewing today
+      if (selectedDateOnly.getTime() !== today.getTime()) {
+        setNowMinutesFromOpen(null);
+        return;
+      }
+
       const currentMinutes = now.getHours() * 60 + now.getMinutes();
       const delta = currentMinutes - openMinutes;
       if (delta < 0 || delta > totalMinutes) {
@@ -79,19 +122,35 @@ export function SalonCalendar({
     updateNow();
     const id = setInterval(updateNow, 60 * 1000);
     return () => clearInterval(id);
-  }, [openMinutes, totalMinutes]);
+  }, [openMinutes, totalMinutes, selectedDate]);
 
   const hasEmployees = employees.length > 0;
+  const timeColumnWidth = isMobile ? 56 : 96;
+
+  const getDateLabel = () => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const selectedDateOnly = new Date(selectedDate);
+    selectedDateOnly.setHours(0, 0, 0, 0);
+
+    if (selectedDateOnly.getTime() === today.getTime()) {
+      return "Today's schedule";
+    }
+    return "Schedule";
+  };
 
   return (
     <section className="space-y-4">
       <header className="space-y-1">
-        <h2 className="text-xl font-semibold text-gray-900">Today&apos;s schedule</h2>
+        <h2 className="text-xl font-semibold text-gray-900">{getDateLabel()}</h2>
+        <DateNavigation selectedDate={selectedDate} onDateChange={setSelectedDate} />
       </header>
 
       {!hasEmployees ? (
         <div className="rounded-2xl px-4 py-6 text-center text-sm text-pink-700">
-          This salon doesn&apos;t have any employees yet.
+          You don&apos;t have any employees yet. Add employees in{" "}
+          <span className="font-semibold">Settings &gt; Salon</span> to display
+          the schedule grid.
         </div>
       ) : (
         <div className="rounded-2xl bg-white/90 backdrop-blur border border-white/60 shadow-sm p-4">
@@ -99,11 +158,11 @@ export function SalonCalendar({
             <div
               className="grid text-sm"
               style={{
-                gridTemplateColumns: `96px repeat(${employees.length}, minmax(0, 1fr))`,
+                gridTemplateColumns: `${timeColumnWidth}px repeat(${employees.length}, minmax(0, 1fr))`,
               }}
             >
               {/* header row */}
-              <div className="h-10 pr-9 flex items-center justify-end text-xs font-semibold text-gray-500">
+              <div className={`h-10 ${isMobile ? "pr-2" : "pr-9"} flex items-center justify-end text-xs font-semibold text-gray-500`}>
                 Time
               </div>
               {employees.map((employee) => (
@@ -126,7 +185,7 @@ export function SalonCalendar({
                 <div
                   className="pointer-events-none absolute grid"
                   style={{
-                    gridTemplateColumns: `96px repeat(${employees.length}, minmax(0, 1fr))`,
+                    gridTemplateColumns: `${timeColumnWidth}px repeat(${employees.length}, minmax(0, 1fr))`,
                   }}
                 >
                   {Array.from({ length: employees.length + 1 }).map((_, index) => (
@@ -145,13 +204,13 @@ export function SalonCalendar({
                 <div
                   className="relative z-10 grid"
                   style={{
-                    gridTemplateColumns: `96px repeat(${employees.length}, minmax(0, 1fr))`,
+                    gridTemplateColumns: `${timeColumnWidth}px repeat(${employees.length}, minmax(0, 1fr))`,
                   }}
                 >
                   {timeSlots.map((slot, index) => (
                     <Fragment key={slot.label}>
                       <div
-                        className="pr-9 pb-5 text-right text-xs text-gray-500"
+                        className={`${isMobile ? "pr-2" : "pr-9"} pb-5 text-right text-xs text-gray-500`}
                       >
                         {slot.label}
                       </div>
@@ -166,6 +225,21 @@ export function SalonCalendar({
                     </Fragment>
                   ))}
                 </div>
+
+                {/* Booking blocks overlay */}
+                {bookings.length > 0 && (
+                  <CalendarEvent
+                    bookings={bookings}
+                    employees={employees}
+                    selectedDate={selectedDate}
+                    openMinutes={openMinutes}
+                    totalMinutes={totalMinutes}
+                    onBookingClick={(booking) => {
+                      setSelectedBooking(booking);
+                      setIsModalOpen(true);
+                    }}
+                  />
+                )}
 
                 {/* current time indicator – positioned relative to the rows area */}
                 {nowMinutesFromOpen !== null && totalMinutes > 0 && (
@@ -186,6 +260,12 @@ export function SalonCalendar({
           </div>
         </div>
       )}
+
+      <BookingDetailsModal
+        booking={selectedBooking}
+        isOpen={isModalOpen}
+        onOpenChange={setIsModalOpen}
+      />
     </section>
   );
 }

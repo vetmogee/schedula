@@ -2,11 +2,39 @@ import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import Link from "next/link";
 import { CalendarUser } from "@/app/_components/salon/CalendarUser";
-import { CalendarEvent } from "@/app/_components/salon/CalendarEvent";
 import { ReservationButton } from "@/app/_components/salon/ReservationButton";
+import { cookies } from "next/headers";
+import { supabase } from "@/lib/supabase/server";
 
 interface SalonDetailPageProps {
   params: Promise<{ id: string }>;
+}
+
+async function getCurrentUser() {
+  try {
+    const cookieStore = await cookies();
+    const token = cookieStore.get("auth-token")?.value;
+
+    if (!token) {
+      return null;
+    }
+
+    const { data: authData } = await supabase.auth.getUser(token);
+    const authUser = authData?.user;
+
+    if (!authUser) {
+      return null;
+    }
+
+    const dbUser = await prisma.user.findUnique({
+      where: { id: authUser.id },
+    });
+
+    return dbUser;
+  } catch (error) {
+    console.error("Error getting current user:", error);
+    return null;
+  }
 }
 
 export default async function SalonDetailPage({ params }: SalonDetailPageProps) {
@@ -17,8 +45,7 @@ export default async function SalonDetailPage({ params }: SalonDetailPageProps) 
     notFound();
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const salon = await (prisma.salon.findUnique as any)({
+  const salon = await prisma.salon.findUnique({
     where: { id: salonId },
     include: {
       services: {
@@ -40,11 +67,6 @@ export default async function SalonDetailPage({ params }: SalonDetailPageProps) 
         },
       },
       bookings: {
-        where: {
-          date: {
-            gte: new Date(),
-          },
-        },
         include: {
           bookingServices: {
             include: {
@@ -87,27 +109,19 @@ export default async function SalonDetailPage({ params }: SalonDetailPageProps) 
 
   // Group services by category, maintaining category order
   const servicesByCategory = new Map<string, typeof salon.services>();
-  salon.categories.forEach((category: any) => {
+  salon.categories.forEach((category) => {
     servicesByCategory.set(category.name, []);
   });
   
-  salon.services.forEach((service: any) => {
+  salon.services.forEach((service) => {
     const categoryName = service.category.name;
     const existing = servicesByCategory.get(categoryName) || [];
     existing.push(service);
     servicesByCategory.set(categoryName, existing);
   });
 
-  // Format duration
-  const formatDuration = (date: Date) => {
-    const d = new Date(date);
-    const hours = d.getHours();
-    const minutes = d.getMinutes();
-    if (hours === 0) {
-      return `${minutes} min`;
-    }
-    return `${hours}h ${minutes > 0 ? `${minutes}min` : ""}`.trim();
-  };
+  // Get current user for authentication check
+  const currentUser = await getCurrentUser();
 
   return (
     <main className="min-h-screen bg-gradient-to-br from-[#ffb5c2] to-[#fdd7de] py-10 px-4">
@@ -182,7 +196,7 @@ export default async function SalonDetailPage({ params }: SalonDetailPageProps) 
         {salon.services.length === 0 && salon.employees.length === 0 && (
           <div className="rounded-2xl bg-white/80 backdrop-blur shadow-md p-6 border border-white/60 text-center">
             <p className="text-gray-600">
-              This salon hasn't added any services or employees yet.
+              This salon hasn&apos;t added any services or employees yet.
             </p>
           </div>
         )}
@@ -195,9 +209,26 @@ export default async function SalonDetailPage({ params }: SalonDetailPageProps) 
               <CalendarUser
                 openingTime={openingTimeForCalendar}
                 closingTime={closingTimeForCalendar}
-                employees={salon.employees.map((e: any) => ({
+                employees={salon.employees.map((e) => ({
                   id: e.id,
                   name: e.name,
+                }))}
+                bookings={salon.bookings.map((b) => ({
+                  id: b.id,
+                  date: b.date,
+                  services: b.bookingServices.map((bs) => ({
+                    name: bs.service.name,
+                    duration: bs.service.duration,
+                  })),
+                  employee: b.employee
+                    ? {
+                        id: b.employee.id,
+                        name: b.employee.name,
+                      }
+                    : null,
+                  customer: {
+                    name: b.customer.name,
+                  },
                 }))}
               />
             </div>
@@ -212,53 +243,27 @@ export default async function SalonDetailPage({ params }: SalonDetailPageProps) 
             <div className="flex items-center justify-center">
               <ReservationButton
                 services={salon.services}
-                employees={salon.employees.map((e: any) => ({
+                employees={salon.employees.map((e) => ({
                   id: e.id,
                   name: e.name,
                 }))}
                 currency={salon.currency}
                 openingTime={openingTimeForCalendar}
                 closingTime={closingTimeForCalendar}
-                bookings={salon.bookings.map((b: any) => ({
+                bookings={salon.bookings.map((b) => ({
                   id: b.id,
                   date: b.date,
                   employeeId: b.employee.id,
-                  services: b.bookingServices.map((bs: any) => ({
+                  services: b.bookingServices.map((bs) => ({
                     duration: bs.service.duration,
                   })),
                 }))}
                 salonId={salonId}
+                currentUser={currentUser ? { id: currentUser.id, role: currentUser.role } : null}
               />
             </div>
           )}
         </div>
-
-        {/* Calendar Events Component */}
-        <CalendarEvent
-          bookings={salon.bookings.map((b: any) => ({
-            id: b.id,
-            date: b.date,
-            services: b.bookingServices.map((bs: any) => ({
-              name: bs.service.name,
-              duration: bs.service.duration,
-            })),
-            employee: b.employee
-              ? {
-                  id: b.employee.id,
-                  name: b.employee.name,
-                }
-              : null,
-            customer: {
-              name: b.customer.name,
-            },
-          }))}
-          employees={salon.employees.map((e: any) => ({
-            id: e.id,
-            name: e.name,
-          }))}
-          openingTime={openingTimeForCalendar}
-          closingTime={closingTimeForCalendar}
-        />
       </div>
     </main>
   );

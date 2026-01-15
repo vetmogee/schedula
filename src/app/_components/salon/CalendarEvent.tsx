@@ -1,7 +1,7 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import { DateNavigation } from "./DateNavigation";
+import { useMemo } from "react";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 type Booking = {
   id: number;
@@ -22,51 +22,81 @@ type Booking = {
 type Props = {
   bookings: Booking[];
   employees: { id: number; name: string }[];
-  openingTime: string | null;
-  closingTime: string | null;
+  selectedDate: Date;
+  openMinutes: number;
+  totalMinutes: number;
+  onBookingClick?: (booking: Booking) => void;
 };
 
-function parseTimeToMinutes(time: string | null): number | null {
-  if (!time) return null;
-  const [h, m] = time.split(":").map((v) => parseInt(v, 10));
-  if (Number.isNaN(h) || Number.isNaN(m)) return null;
-  return h * 60 + m;
+// Calculate booking position and height
+function getBookingStyle(
+  booking: Booking,
+  openMinutes: number,
+  totalMinutes: number,
+) {
+  const bookingDate = new Date(booking.date);
+  const bookingMinutes = bookingDate.getHours() * 60 + bookingDate.getMinutes();
+  const startOffset = bookingMinutes - openMinutes;
+
+  // Sum up all service durations (use UTC methods to avoid timezone issues)
+  const durationMinutes = booking.services.reduce((total, service) => {
+    const d = new Date(service.duration);
+    return total + d.getUTCHours() * 60 + d.getUTCMinutes();
+  }, 0);
+
+  const topPercent = (startOffset / totalMinutes) * 100;
+  const heightPercent = (durationMinutes / totalMinutes) * 100;
+
+  return {
+    top: `${topPercent}%`,
+    height: `${heightPercent}%`,
+  };
 }
 
-function minutesToLabel(totalMinutes: number): string {
-  const h = Math.floor(totalMinutes / 60);
-  const m = totalMinutes % 60;
-  return `${h.toString().padStart(2, "0")}:${m.toString().padStart(2, "0")}`;
+function formatTime(date: Date) {
+  return new Date(date).toLocaleTimeString(undefined, {
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}
+
+function formatDuration(booking: Booking) {
+  const totalMinutes = booking.services.reduce((total, service) => {
+    const d = new Date(service.duration);
+    // Use UTC methods to avoid timezone issues with Time type
+    return total + d.getUTCHours() * 60 + d.getUTCMinutes();
+  }, 0);
+  if (totalMinutes < 60) {
+    return `${totalMinutes} min`;
+  }
+  const hours = Math.floor(totalMinutes / 60);
+  const minutes = totalMinutes % 60;
+  return `${hours}h${minutes > 0 ? ` ${minutes}min` : ""}`.trim();
+}
+
+// Check if booking is in the past
+function isPastBooking(booking: Booking) {
+  const bookingDate = new Date(booking.date);
+  const now = new Date();
+  return bookingDate.getTime() < now.getTime();
 }
 
 export function CalendarEvent({
   bookings,
   employees,
-  openingTime,
-  closingTime,
+  selectedDate,
+  openMinutes,
+  totalMinutes,
+  onBookingClick,
 }: Props) {
-  const [selectedDate, setSelectedDate] = useState<Date>(() => {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    return today;
-  });
-
-  const [openMinutes, closeMinutes] = useMemo(() => {
-    const open = parseTimeToMinutes(openingTime) ?? 9 * 60;
-    const close = parseTimeToMinutes(closingTime) ?? 17 * 60;
-    if (close <= open) {
-      return [open, open + 8 * 60];
-    }
-    return [open, close];
-  }, [openingTime, closingTime]);
-
-  const totalMinutes = closeMinutes - openMinutes;
+  const isMobile = useIsMobile();
+  const timeColumnWidth = isMobile ? 56 : 96;
 
   // Filter bookings for the selected date
   const filteredBookings = useMemo(() => {
     const selectedDateOnly = new Date(selectedDate);
     selectedDateOnly.setHours(0, 0, 0, 0);
-    
+
     return bookings.filter((booking) => {
       const bookingDate = new Date(booking.date);
       bookingDate.setHours(0, 0, 0, 0);
@@ -74,113 +104,79 @@ export function CalendarEvent({
     });
   }, [bookings, selectedDate]);
 
-  // Sort bookings by time
-  const sortedBookings = useMemo(() => {
-    return [...filteredBookings].sort((a, b) => {
-      const dateA = new Date(a.date);
-      const dateB = new Date(b.date);
-      return dateA.getTime() - dateB.getTime();
+  // Get bookings for a specific employee column
+  const getBookingsForEmployee = (employeeId: number | null) => {
+    return filteredBookings.filter((booking) => {
+      if (!employeeId) {
+        return !booking.employee;
+      }
+      return booking.employee?.id === employeeId;
     });
-  }, [filteredBookings]);
-
-  // Calculate booking position and height
-  const getBookingStyle = (booking: Booking) => {
-    const bookingDate = new Date(booking.date);
-    const bookingMinutes = bookingDate.getHours() * 60 + bookingDate.getMinutes();
-    const startOffset = bookingMinutes - openMinutes;
-    
-    // Sum up all service durations
-    const durationMinutes = booking.services.reduce((total, service) => {
-      const d = new Date(service.duration);
-      return total + d.getHours() * 60 + d.getMinutes();
-    }, 0);
-    
-    const topPercent = (startOffset / totalMinutes) * 100;
-    const heightPercent = (durationMinutes / totalMinutes) * 100;
-
-    return {
-      top: `${topPercent}%`,
-      height: `${heightPercent}%`,
-    };
-  };
-
-  // Get employee column index
-  const getEmployeeColumn = (employeeId: number | null) => {
-    if (!employeeId) return 0;
-    const index = employees.findIndex((e) => e.id === employeeId);
-    return index >= 0 ? index + 1 : 0;
-  };
-
-  const getDateLabel = () => {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const selectedDateOnly = new Date(selectedDate);
-    selectedDateOnly.setHours(0, 0, 0, 0);
-
-    if (selectedDateOnly.getTime() === today.getTime()) {
-      return "Today's Bookings";
-    }
-    return "Bookings";
   };
 
   return (
-    <div className="space-y-6">
-      <div className="rounded-2xl bg-white/80 backdrop-blur shadow-md p-6 border border-white/60">
-        <h2 className="text-xl font-semibold text-gray-900 mb-4">
-          {getDateLabel()}
-        </h2>
-        <DateNavigation selectedDate={selectedDate} onDateChange={setSelectedDate} />
-        
-        {sortedBookings.length === 0 ? (
-          <p className="text-gray-600 text-sm mt-4">
-            No bookings scheduled for this date.
-          </p>
-        ) : (
-          <div className="space-y-2 mt-4">
-            {sortedBookings.map((booking) => {
-              const bookingDate = new Date(booking.date);
-              const timeLabel = bookingDate.toLocaleTimeString(undefined, {
-                hour: "2-digit",
-                minute: "2-digit",
-              });
+    <div
+      className="absolute inset-0 pointer-events-none z-30 grid col-span-full"
+      style={{
+        gridTemplateColumns: `${timeColumnWidth}px repeat(${employees.length}, minmax(0, 1fr))`,
+        gridColumn: `1 / span ${employees.length + 1}`,
+      }}
+    >
+      {/* Time column - empty, ensures grid alignment */}
+      <div className="relative" />
+      {employees.map((employee, employeeIndex) => {
+        const employeeBookings = getBookingsForEmployee(employee.id);
+        // Include unassigned bookings in the first employee column
+        const unassignedBookings =
+          employeeIndex === 0 ? getBookingsForEmployee(null) : [];
+        const allBookings = [...employeeBookings, ...unassignedBookings];
 
-              const totalDurationMinutes = booking.services.reduce((total, service) => {
-                const d = new Date(service.duration);
-                return total + d.getHours() * 60 + d.getMinutes();
-              }, 0);
-              const durationLabel =
-                totalDurationMinutes < 60
-                  ? `${totalDurationMinutes} min`
-                  : `${Math.floor(totalDurationMinutes / 60)}h ${totalDurationMinutes % 60 > 0 ? `${totalDurationMinutes % 60}min` : ""}`.trim();
+        return (
+          <div key={`bookings-${employee.id}`} className="relative">
+            {allBookings.map((booking) => {
+              const style = getBookingStyle(booking, openMinutes, totalMinutes);
+              const bookingDate = new Date(booking.date);
+              const timeLabel = formatTime(bookingDate);
+              const durationLabel = formatDuration(booking);
+              const serviceNames = booking.services
+                .map((s) => s.name)
+                .join(", ");
+              const isPast = isPastBooking(booking);
+              const isUnassigned = !booking.employee;
 
               return (
                 <div
                   key={booking.id}
-                  className="p-3 rounded-lg bg-pink-50/60 border border-pink-200"
+                  onClick={() => onBookingClick?.(booking)}
+                  className={`absolute left-1 right-1 pointer-events-auto rounded-md shadow-xl border p-2 overflow-hidden transition-colors cursor-pointer ${
+                    isPast
+                      ? "bg-gray-500 text-gray-300 hover:bg-gray-600 border-gray-600/50"
+                      : "bg-[#ffb5c2] text-gray-900 hover:bg-[#eb9baa] border-gray-200"
+                  }`}
+                  style={style}
+                  title={`${timeLabel} - ${serviceNames} (${durationLabel})${isUnassigned ? " - Unassigned" : ""}${isPast ? " - Past" : ""}`}
                 >
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <p className="font-medium text-gray-900">
-                        {timeLabel} - {booking.services.map((s) => s.name).join(", ")}
-                      </p>
-                      <p className="text-sm text-gray-600 mt-1">
-                        {booking.employee?.name || "Unassigned"} ·{" "}
-                        {durationLabel}
-                      </p>
-                      {booking.customer.name && (
-                        <p className="text-xs text-gray-500 mt-1">
-                          Customer: {booking.customer.name}
-                        </p>
-                      )}
+                  <div className="text-xs font-semibold truncate">
+                    {timeLabel}
+                  </div>
+                  <div className="text-xs truncate mt-0.5 opacity-95">
+                    {serviceNames}
+                  </div>
+                  {booking.customer.name && (
+                    <div className="text-xs mt-0.5 opacity-80 truncate">
+                      {booking.customer.name}
                     </div>
+                  )}
+                  <div className="text-xs mt-0.5 opacity-75">
+                    {durationLabel}
+                    {isUnassigned && " · Unassigned"}
                   </div>
                 </div>
               );
             })}
           </div>
-        )}
-      </div>
+        );
+      })}
     </div>
   );
 }
-

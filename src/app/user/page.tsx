@@ -41,8 +41,7 @@ export default async function UserBookingsPage() {
   const now = new Date();
 
   // Get all bookings for this customer, ordered by date (upcoming first, then past)
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const bookings = await (prisma.booking.findMany as any)({
+  const bookings = await prisma.booking.findMany({
     where: {
       customerId: dbUser.id,
     },
@@ -65,21 +64,11 @@ export default async function UserBookingsPage() {
   });
 
   // Separate upcoming and past bookings
-  const upcomingBookings = bookings.filter((booking: any) => booking.date >= now);
-  const pastBookings = bookings.filter((booking: any) => booking.date < now);
+  const upcomingBookings = bookings.filter((booking) => booking.date >= now);
+  const pastBookings = bookings.filter((booking) => booking.date < now);
 
   const formatDateTime = (date: Date) => {
     return format(date, "EEEE, MMMM d, yyyy 'at' h:mm a");
-  };
-
-  const formatDuration = (date: Date) => {
-    const d = new Date(date);
-    const hours = d.getHours();
-    const minutes = d.getMinutes();
-    if (hours === 0) {
-      return `${minutes} min`;
-    }
-    return `${hours}h ${minutes > 0 ? `${minutes}min` : ""}`.trim();
   };
 
   return (
@@ -104,7 +93,7 @@ export default async function UserBookingsPage() {
               Upcoming ({upcomingBookings.length})
             </h2>
             <div className="space-y-3">
-              {upcomingBookings.map((booking: any) => (
+              {upcomingBookings.map((booking) => (
                 <div
                   key={booking.id}
                   className="rounded-2xl bg-white/80 backdrop-blur shadow-md p-6 border border-white/60 hover:shadow-lg transition-shadow"
@@ -114,11 +103,13 @@ export default async function UserBookingsPage() {
                       <div className="flex items-start justify-between mb-3">
                         <div>
                           <h3 className="text-lg font-semibold text-gray-900 mb-1">
-                            {booking.bookingServices.map((bs: any) => bs.service.name).join(", ")}
+                            <Link
+                              href={`/salons/${booking.salon.id}`}
+                              className="text-pink-600 hover:text-pink-700 underline"
+                            >
+                              {booking.salon.name}
+                            </Link>
                           </h3>
-                          <p className="text-sm text-gray-600">
-                            {booking.bookingServices.map((bs: any) => bs.service.category.name).join(", ")}
-                          </p>
                         </div>
                         <span className="px-3 py-1 rounded-full bg-green-100 text-green-800 text-xs font-medium">
                           Upcoming
@@ -127,13 +118,12 @@ export default async function UserBookingsPage() {
 
                       <div className="space-y-2 text-sm text-gray-700">
                         <div className="flex items-center gap-2">
-                          <span className="font-medium">Salon:</span>
-                          <Link
-                            href={`/salons/${booking.salon.id}`}
-                            className="text-pink-600 hover:text-pink-700 underline"
-                          >
-                            {booking.salon.name}
-                          </Link>
+                          <span className="font-medium">Services:</span>
+                          <span>{booking.bookingServices.map((bs) => bs.service.name).join(", ")}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className="font-medium">Categories:</span>
+                          <span>{booking.bookingServices.map((bs) => bs.service.category.name).join(", ")}</span>
                         </div>
                         <div className="flex items-center gap-2">
                           <span className="font-medium">Employee:</span>
@@ -147,9 +137,10 @@ export default async function UserBookingsPage() {
                           <span className="font-medium">Duration:</span>
                           <span>
                             {(() => {
-                              const totalMinutes = booking.bookingServices.reduce((total: number, bs: any) => {
+                              const totalMinutes = booking.bookingServices.reduce((total: number, bs) => {
                                 const d = new Date(bs.service.duration);
-                                return total + d.getHours() * 60 + d.getMinutes();
+                                // Use UTC methods to avoid timezone issues with Time type
+                                return total + d.getUTCHours() * 60 + d.getUTCMinutes();
                               }, 0);
                               const hours = Math.floor(totalMinutes / 60);
                               const minutes = totalMinutes % 60;
@@ -164,7 +155,7 @@ export default async function UserBookingsPage() {
                           <span className="font-medium">Price:</span>
                           <span>
                             {booking.salon.currency || "USD"}{" "}
-                            {booking.bookingServices.reduce((sum: number, bs: any) => sum + bs.service.price, 0).toFixed(2)}
+                            {booking.bookingServices.reduce((sum: number, bs) => sum + bs.service.price, 0).toFixed(2)}
                           </span>
                         </div>
                       </div>
@@ -183,7 +174,7 @@ export default async function UserBookingsPage() {
               Past ({pastBookings.length})
             </h2>
             <div className="space-y-3">
-              {pastBookings.map((booking: any) => (
+              {pastBookings.map((booking) => (
                 <div
                   key={booking.id}
                   className="rounded-2xl bg-white/60 backdrop-blur shadow-md p-6 border border-white/40 hover:shadow-lg transition-shadow opacity-90"
@@ -193,11 +184,13 @@ export default async function UserBookingsPage() {
                       <div className="flex items-start justify-between mb-3">
                         <div>
                           <h3 className="text-lg font-semibold text-gray-900 mb-1">
-                            {booking.bookingServices.map((bs: any) => bs.service.name).join(", ")}
+                            <Link
+                              href={`/salons/${booking.salon.id}`}
+                              className="text-pink-600 hover:text-pink-700 underline"
+                            >
+                              {booking.salon.name}
+                            </Link>
                           </h3>
-                          <p className="text-sm text-gray-600">
-                            {booking.bookingServices.map((bs: any) => bs.service.category.name).join(", ")}
-                          </p>
                         </div>
                         <span className="px-3 py-1 rounded-full bg-gray-100 text-gray-600 text-xs font-medium">
                           Completed
@@ -206,13 +199,12 @@ export default async function UserBookingsPage() {
 
                       <div className="space-y-2 text-sm text-gray-700">
                         <div className="flex items-center gap-2">
-                          <span className="font-medium">Salon:</span>
-                          <Link
-                            href={`/salons/${booking.salon.id}`}
-                            className="text-pink-600 hover:text-pink-700 underline"
-                          >
-                            {booking.salon.name}
-                          </Link>
+                          <span className="font-medium">Services:</span>
+                          <span>{booking.bookingServices.map((bs) => bs.service.name).join(", ")}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className="font-medium">Categories:</span>
+                          <span>{booking.bookingServices.map((bs) => bs.service.category.name).join(", ")}</span>
                         </div>
                         <div className="flex items-center gap-2">
                           <span className="font-medium">Employee:</span>
@@ -226,9 +218,10 @@ export default async function UserBookingsPage() {
                           <span className="font-medium">Duration:</span>
                           <span>
                             {(() => {
-                              const totalMinutes = booking.bookingServices.reduce((total: number, bs: any) => {
+                              const totalMinutes = booking.bookingServices.reduce((total: number, bs) => {
                                 const d = new Date(bs.service.duration);
-                                return total + d.getHours() * 60 + d.getMinutes();
+                                // Use UTC methods to avoid timezone issues with Time type
+                                return total + d.getUTCHours() * 60 + d.getUTCMinutes();
                               }, 0);
                               const hours = Math.floor(totalMinutes / 60);
                               const minutes = totalMinutes % 60;
@@ -243,7 +236,7 @@ export default async function UserBookingsPage() {
                           <span className="font-medium">Price:</span>
                           <span>
                             {booking.salon.currency || "USD"}{" "}
-                            {booking.bookingServices.reduce((sum: number, bs: any) => sum + bs.service.price, 0).toFixed(2)}
+                            {booking.bookingServices.reduce((sum: number, bs) => sum + bs.service.price, 0).toFixed(2)}
                           </span>
                         </div>
                       </div>

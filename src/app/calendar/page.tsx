@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 
 import { prisma } from "@/lib/prisma";
 import { supabase } from "@/lib/supabase/server";
-import { SalonScheduleCalendar } from "../_components/salon/SalonScheduleCalendar";
+import { CalendarSalon } from "../_components/salon/CalendarSalon";
 
 async function requireSalonUser() {
   const cookieStore = await cookies();
@@ -36,6 +36,26 @@ async function requireSalonUser() {
     where: { userId: authUser.id },
     include: {
       employees: true,
+      bookings: {
+        include: {
+          bookingServices: {
+            include: {
+              service: true,
+            },
+          },
+          employee: true,
+          customer: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+            },
+          },
+        },
+        orderBy: {
+          date: "asc",
+        },
+      },
     },
   });
 
@@ -50,17 +70,35 @@ export default async function SalonCalendarPage() {
   const { salon } = await requireSalonUser();
 
   const openingTime =
-    (salon as any).openingTime != null
-      ? new Date((salon as any).openingTime).toISOString().substring(11, 16)
+    salon.openingTime != null
+      ? new Date(salon.openingTime).toISOString().substring(11, 16)
       : null;
   const closingTime =
-    (salon as any).closingTime != null
-      ? new Date((salon as any).closingTime).toISOString().substring(11, 16)
+    salon.closingTime != null
+      ? new Date(salon.closingTime).toISOString().substring(11, 16)
       : null;
 
   const employees = (salon.employees || []).map((employee) => ({
     id: employee.id,
     name: employee.name,
+  }));
+
+  const bookings = (salon.bookings || []).map((booking) => ({
+    id: booking.id,
+    date: booking.date,
+    services: booking.bookingServices.map((bs) => ({
+      name: bs.service.name,
+      duration: bs.service.duration,
+    })),
+    employee: booking.employee
+      ? {
+          id: booking.employee.id,
+          name: booking.employee.name,
+        }
+      : null,
+    customer: {
+      name: booking.customer.name,
+    },
   }));
 
   return (
@@ -76,10 +114,11 @@ export default async function SalonCalendarPage() {
           </p>
         </header>
 
-        <SalonScheduleCalendar
+        <CalendarSalon
           openingTime={openingTime}
           closingTime={closingTime}
           employees={employees}
+          bookings={bookings}
         />
       </div>
     </main>

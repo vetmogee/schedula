@@ -56,7 +56,7 @@ export async function createServiceCategory(formData: FormData) {
   const { authUser, salon } = await requireSalonUser();
 
   const existingCount = await prisma.serviceCategory.count({
-    where: { salonId: salon.id } as any,
+    where: { salonId: salon.id },
   });
 
   await prisma.serviceCategory.create({
@@ -65,7 +65,7 @@ export async function createServiceCategory(formData: FormData) {
       userId: authUser.id,
       salonId: salon.id,
       position: existingCount,
-    } as any,
+    },
   });
 
   revalidatePath("/services");
@@ -91,12 +91,14 @@ export async function createService(formData: FormData) {
   }
 
   // Expecting durationRaw like "01:30" → convert to a Date stored as time
-  const duration = new Date(`1970-01-01T${durationRaw}:00Z`);
+  // Use UTC to avoid timezone issues
+  const [hours, minutes] = durationRaw.split(":").map(Number);
+  const duration = new Date(Date.UTC(1970, 0, 1, hours, minutes, 0, 0));
 
   const { salon } = await requireSalonUser();
 
   const existingCount = await prisma.service.count({
-    where: { salonId: salon.id, categoryId } as any,
+    where: { salonId: salon.id, categoryId },
   });
 
   await prisma.service.create({
@@ -107,7 +109,7 @@ export async function createService(formData: FormData) {
       categoryId,
       salonId: salon.id,
       position: existingCount,
-    } as any,
+    },
   });
 
   revalidatePath("/services");
@@ -127,7 +129,7 @@ export async function updateServiceCategory(formData: FormData) {
   const { salon } = await requireSalonUser();
 
   await prisma.serviceCategory.updateMany({
-    where: { id, salonId: salon.id } as any,
+    where: { id, salonId: salon.id },
     data: { name },
   });
 
@@ -149,7 +151,9 @@ export async function updateService(formData: FormData) {
     return;
   }
 
-  const duration = new Date(`1970-01-01T${durationRaw}:00Z`);
+  // Use UTC to avoid timezone issues
+  const [hours, minutes] = durationRaw.split(":").map(Number);
+  const duration = new Date(Date.UTC(1970, 0, 1, hours, minutes, 0, 0));
   const { salon } = await requireSalonUser();
 
   await prisma.service.updateMany({
@@ -177,10 +181,10 @@ export async function swapCategoryPosition(formData: FormData) {
 
   const { salon } = await requireSalonUser();
 
-  const categories = (await prisma.serviceCategory.findMany({
-    where: { salon: { id: salon.id } } as any,
+  const categories = await prisma.serviceCategory.findMany({
+    where: { salonId: salon.id },
     orderBy: [{ id: "asc" }],
-  })) as any[];
+  });
 
   const index = categories.findIndex((c) => c.id === id);
   if (index === -1) return;
@@ -188,17 +192,17 @@ export async function swapCategoryPosition(formData: FormData) {
   const targetIndex = direction === "up" ? index - 1 : index + 1;
   if (targetIndex < 0 || targetIndex >= categories.length) return;
 
-  const current = categories[index] as any;
-  const other = categories[targetIndex] as any;
+  const current = categories[index];
+  const other = categories[targetIndex];
 
   await prisma.$transaction([
     prisma.serviceCategory.update({
       where: { id: current.id },
-      data: { position: other.position } as any,
+      data: { position: other.position },
     }),
     prisma.serviceCategory.update({
       where: { id: other.id },
-      data: { position: current.position } as any,
+      data: { position: current.position },
     }),
   ]);
 
@@ -225,10 +229,10 @@ export async function swapServicePosition(formData: FormData) {
 
   const { salon } = await requireSalonUser();
 
-  const services = (await prisma.service.findMany({
-    where: { salonId: salon.id, categoryId } as any,
+  const services = await prisma.service.findMany({
+    where: { salonId: salon.id, categoryId },
     orderBy: [{ id: "asc" }],
-  })) as any[];
+  });
 
   const index = services.findIndex((s) => s.id === id);
   if (index === -1) return;
@@ -236,17 +240,17 @@ export async function swapServicePosition(formData: FormData) {
   const targetIndex = direction === "up" ? index - 1 : index + 1;
   if (targetIndex < 0 || targetIndex >= services.length) return;
 
-  const current = services[index] as any;
-  const other = services[targetIndex] as any;
+  const current = services[index];
+  const other = services[targetIndex];
 
   await prisma.$transaction([
     prisma.service.update({
       where: { id: current.id },
-      data: { position: other.position } as any,
+      data: { position: other.position },
     }),
     prisma.service.update({
       where: { id: other.id },
-      data: { position: current.position } as any,
+      data: { position: current.position },
     }),
   ]);
 
@@ -277,12 +281,12 @@ export async function reorderServices(formData: FormData) {
 
   const { salon } = await requireSalonUser();
 
-  const services = (await prisma.service.findMany({
-    where: { salonId: salon.id, categoryId } as any,
+  const services = await prisma.service.findMany({
+    where: { salonId: salon.id, categoryId },
     orderBy: [{ id: "asc" }],
-  })) as any[];
+  });
 
-  const idsSet = new Set(services.map((s: any) => s.id));
+  const idsSet = new Set(services.map((s) => s.id));
   if (!orderedIds.every((id) => idsSet.has(id))) {
     return;
   }
@@ -291,7 +295,7 @@ export async function reorderServices(formData: FormData) {
     orderedIds.map((id, index) =>
       prisma.service.update({
         where: { id },
-        data: { position: index } as any,
+        data: { position: index },
       })
     )
   );
@@ -302,39 +306,44 @@ export async function reorderServices(formData: FormData) {
 export default async function ServicesPage() {
   const { salon } = await requireSalonUser();
   const currency =
-    (salon as any).currency && (salon as any).currency.length > 0
-      ? (salon as any).currency
+    salon.currency && salon.currency.length > 0
+      ? salon.currency
       : "USD";
 
-  const rawCategories = (await prisma.serviceCategory.findMany({
-    where: { salonId: salon.id } as any,
+  const rawCategories = await prisma.serviceCategory.findMany({
+    where: { salonId: salon.id },
     include: {
       services: true,
     },
     orderBy: { id: "asc" },
-  })) as any[];
+  });
 
   const mappedCategories = rawCategories
     .sort(
       (a, b) =>
         (a.position ?? 0) - (b.position ?? 0) || a.id - b.id
     )
-    .map((category: any) => ({
+    .map((category) => ({
       id: category.id,
       name: category.name,
       position: category.position ?? 0,
-      services: (category.services as any[])
+      services: category.services
         .slice()
         .sort(
           (a, b) =>
             (a.position ?? 0) - (b.position ?? 0) || a.id - b.id
         )
-        .map((service: any) => ({
+        .map((service) => ({
           id: service.id,
           name: service.name,
           price: service.price,
-          // Keep duration as "HH:MM" string for the UI
-          duration: new Date(service.duration).toISOString().substring(11, 16),
+          // Keep duration as "HH:MM" string for the UI (use UTC to avoid timezone issues)
+          duration: (() => {
+            const d = new Date(service.duration);
+            const hours = d.getUTCHours().toString().padStart(2, "0");
+            const minutes = d.getUTCMinutes().toString().padStart(2, "0");
+            return `${hours}:${minutes}`;
+          })(),
           position: service.position ?? 0,
         })),
     }));

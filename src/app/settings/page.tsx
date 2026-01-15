@@ -61,17 +61,17 @@ async function updateSalonSettings(formData: FormData) {
   // Update the salon row linked to this user
   await prisma.salon.update({
     where: { id: salon.id },
-    data: {
-      name: salonName || undefined,
-      description: description || undefined,
-      address: address || undefined,
-      city: city || undefined,
-      phone: phone ?? undefined,
-      openingTime: openingDate ?? undefined,
-      closingTime: closingDate ?? undefined,
-      currency: currency ?? undefined,
-    } as any,
-  })
+      data: {
+        name: salonName || undefined,
+        description: description || undefined,
+        address: address || undefined,
+        city: city || undefined,
+        phone: phone ?? undefined,
+        openingTime: openingDate ?? undefined,
+        closingTime: closingDate ?? undefined,
+        currency: currency ?? undefined,
+      },
+    })
 
   // Keep the user display name in sync with the salon name
   if (salonName) {
@@ -205,16 +205,16 @@ export default async function SettingsPage() {
               dbUser.salon
                 ? {
                     name: dbUser.salon.name,
-                    description: (dbUser.salon as any).description ?? null,
-                    address: (dbUser.salon as any).address ?? null,
-                    city: (dbUser.salon as any).city ?? null,
+                    description: dbUser.salon.description ?? null,
+                    address: dbUser.salon.address ?? null,
+                    city: dbUser.salon.city ?? null,
                     phone:
-                      (dbUser.salon as any).phone != null
-                        ? String((dbUser.salon as any).phone)
+                      dbUser.salon.phone != null
+                        ? String(dbUser.salon.phone)
                         : null,
-                    currency: (dbUser.salon as any).currency ?? null,
-                    openingTime: (dbUser.salon as any).openingTime ?? null,
-                    closingTime: (dbUser.salon as any).closingTime ?? null,
+                    currency: dbUser.salon.currency ?? null,
+                    openingTime: dbUser.salon.openingTime ?? null,
+                    closingTime: dbUser.salon.closingTime ?? null,
                   }
                 : null
             }

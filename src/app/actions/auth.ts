@@ -48,7 +48,7 @@ async function register(formData: FormData, role: "CUSTOMER" | "SALON") {
       name,
       role,
       email,
-    } as any,
+    },
   })
 
   // 3️⃣ If this is a salon account, create the corresponding Salon row
@@ -117,7 +117,13 @@ export async function loginAction(formData: FormData) {
     const cookieStore = await cookies()
     
     // Set auth token cookie with expiration (30 days if remember me, otherwise session cookie)
-    const cookieOptions: any = {
+    const cookieOptions: {
+      httpOnly: boolean
+      secure: boolean
+      path: string
+      sameSite: "lax" | "strict" | "none"
+      maxAge?: number
+    } = {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       path: "/",

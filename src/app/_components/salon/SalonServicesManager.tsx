@@ -166,7 +166,7 @@ export function SalonServicesManager({
                 </p>
               ) : (
                 <ul className="space-y-2">
-                  {category.services.map((service, index) => (
+                  {category.services.map((service) => (
                     <li
                       key={service.id}
                       className="flex items-center justify-between text-sm gap-2 rounded-md border border-transparent hover:border-pink-200 bg-white/70"

@@ -36,7 +36,7 @@ export default function ResetPasswordPage() {
             <div className="rounded-md bg-green-100 border border-green-300 text-green-800 px-4 py-3 text-sm">
               <p className="font-medium">Password reset email sent!</p>
               <p className="mt-1">
-                Check your email for a link to reset your password. If it doesn't appear within a few minutes, check your spam folder.
+                Check your email for a link to reset your password. If it doesn&apos;t appear within a few minutes, check your spam folder.
               </p>
             </div>
             <div className="text-center">
@@ -48,7 +48,7 @@ export default function ResetPasswordPage() {
         ) : (
           <>
             <p className="text-gray-600 text-sm mb-6">
-              Enter your email address and we'll send you a link to reset your password.
+              Enter your email address and we&apos;ll send you a link to reset your password.
             </p>
 
             <form action={onSubmit} className="space-y-3">

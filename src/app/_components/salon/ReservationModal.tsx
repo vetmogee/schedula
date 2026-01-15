@@ -111,13 +111,15 @@ export function ReservationModal({
   const totalPrice = selectedServices.reduce((sum, service) => sum + service.price, 0);
   const totalDuration = selectedServices.reduce((sum, service) => {
     const d = new Date(service.duration);
-    return sum + d.getHours() * 60 + d.getMinutes();
+    // Use UTC methods to avoid timezone issues with Time type
+    return sum + d.getUTCHours() * 60 + d.getUTCMinutes();
   }, 0);
 
   const formatDuration = (date: Date) => {
     const d = new Date(date);
-    const hours = d.getHours();
-    const minutes = d.getMinutes();
+    // Use UTC methods to avoid timezone issues with Time type
+    const hours = d.getUTCHours();
+    const minutes = d.getUTCMinutes();
     if (hours === 0) {
       return `${minutes} min`;
     }
@@ -147,7 +149,7 @@ export function ReservationModal({
                 Create Reservation
               </SheetTitle>
               <SheetDescription>
-                Select the services you'd like to book and choose your preferred time.
+                Select the services you&apos;d like to book and choose your preferred time.
               </SheetDescription>
             </SheetHeader>
           </div>
@@ -171,8 +173,10 @@ export function ReservationModal({
                 openingTime={openingTime}
                 closingTime={closingTime}
                 bookings={bookings}
+                selectedServices={selectedServices}
                 onDateSelect={setSelectedDate}
                 onTimeSelect={setSelectedTime}
+                disabled={selectedServices.length === 0}
               />
             </div>
 

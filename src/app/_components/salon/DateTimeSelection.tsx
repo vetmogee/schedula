@@ -19,6 +19,10 @@ type Booking = {
   }[];
 };
 
+type Service = {
+  duration: Date;
+};
+
 type Props = {
   selectedDate: Date | null;
   selectedTime: string | null;
@@ -26,8 +30,10 @@ type Props = {
   openingTime: string | null;
   closingTime: string | null;
   bookings: Booking[];
+  selectedServices?: Service[];
   onDateSelect: (date: Date | null) => void;
   onTimeSelect: (time: string | null) => void;
+  disabled?: boolean;
 };
 
 function parseTimeToMinutes(time: string | null): number | null {
@@ -50,8 +56,10 @@ export function DateTimeSelection({
   openingTime,
   closingTime,
   bookings,
+  selectedServices = [],
   onDateSelect,
   onTimeSelect,
+  disabled = false,
 }: Props) {
   const [openMinutes, closeMinutes] = useMemo(() => {
     const open = parseTimeToMinutes(openingTime) ?? 9 * 60;
@@ -70,7 +78,7 @@ export function DateTimeSelection({
     return slots;
   }, [openMinutes, closeMinutes]);
 
-  // Check if a time slot is unavailable (booked, in the past, or beyond maximum booking date)
+  // Check if a time slot is unavailable (booked, in the past, beyond maximum booking date, or would exceed closing time)
   const isTimeSlotUnavailable = (time: string, date: Date | null, employeeId: number | null) => {
     if (!date || !employeeId) return true; // If no date or employee selected, mark as unavailable
 
@@ -99,9 +107,41 @@ export function DateTimeSelection({
       return true;
     }
 
+    // Check if selected time + total service duration would exceed closing time
+    if (selectedServices.length > 0 && closingTime) {
+      // Calculate total duration of selected services (use UTC methods to avoid timezone issues)
+      const totalDurationMinutes = selectedServices.reduce((total, service) => {
+        const d = new Date(service.duration);
+        return total + d.getUTCHours() * 60 + d.getUTCMinutes();
+      }, 0);
+
+      // Calculate when the booking would end
+      const bookingEndTime = new Date(slotDateTime);
+      bookingEndTime.setMinutes(bookingEndTime.getMinutes() + totalDurationMinutes);
+
+      // Parse closing time
+      const closingMinutes = parseTimeToMinutes(closingTime);
+      if (closingMinutes !== null) {
+        const closingDateTime = new Date(date);
+        closingDateTime.setHours(Math.floor(closingMinutes / 60), closingMinutes % 60, 0, 0);
+
+        // Check if booking end time would exceed closing time
+        if (bookingEndTime > closingDateTime) {
+          return true;
+        }
+      }
+    }
+
     // Check if time slot is booked for the selected employee
     const slotEndTime = new Date(slotDateTime);
-    slotEndTime.setMinutes(slotEndTime.getMinutes() + 30); // 30-minute slots
+    // Use actual service duration if available, otherwise default to 30 minutes (use UTC methods to avoid timezone issues)
+    const slotDurationMinutes = selectedServices.length > 0
+      ? selectedServices.reduce((total, service) => {
+          const d = new Date(service.duration);
+          return total + d.getUTCHours() * 60 + d.getUTCMinutes();
+        }, 0)
+      : 30;
+    slotEndTime.setMinutes(slotEndTime.getMinutes() + slotDurationMinutes);
 
     return bookings.some((booking) => {
       if (booking.employeeId !== employeeId) return false;
@@ -111,10 +151,10 @@ export function DateTimeSelection({
       if (bookingDate.toDateString() !== date.toDateString()) return false;
 
       const bookingEndTime = new Date(bookingDate);
-      // Sum up all service durations
+      // Sum up all service durations (use UTC methods to avoid timezone issues)
       const totalDurationMinutes = booking.services.reduce((total, service) => {
         const d = new Date(service.duration);
-        return total + d.getHours() * 60 + d.getMinutes();
+        return total + d.getUTCHours() * 60 + d.getUTCMinutes();
       }, 0);
       bookingEndTime.setMinutes(bookingEndTime.getMinutes() + totalDurationMinutes);
 
@@ -124,13 +164,19 @@ export function DateTimeSelection({
     });
   };
 
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
+  const today = useMemo(() => {
+    const date = new Date();
+    date.setHours(0, 0, 0, 0);
+    return date;
+  }, []);
 
   // Calculate maximum booking date (1 month from today)
-  const maxBookingDate = new Date(today);
-  maxBookingDate.setMonth(today.getMonth() + 1);
-  maxBookingDate.setHours(23, 59, 59, 999);
+  const maxBookingDate = useMemo(() => {
+    const date = new Date(today);
+    date.setMonth(today.getMonth() + 1);
+    date.setHours(23, 59, 59, 999);
+    return date;
+  }, [today]);
 
   // Generate date options from today up to 1 month ahead
   const dateOptions = useMemo(() => {
@@ -152,8 +198,14 @@ export function DateTimeSelection({
     : undefined;
 
   return (
-    <div className="space-y-4">
+    <div className={`space-y-4 ${disabled ? 'opacity-50 pointer-events-none' : ''}`}>
       <h3 className="text-lg font-semibold text-gray-900">Select Date & Time</h3>
+      
+      {disabled && (
+        <p className="text-sm text-gray-500 text-center py-2">
+          Please select a service first
+        </p>
+      )}
       
       {/* Date Selection */}
       <div className="space-y-3">
@@ -164,8 +216,9 @@ export function DateTimeSelection({
             const option = dateOptions.find((opt) => opt.value === value);
             onDateSelect(option ? option.date : null);
           }}
+          disabled={disabled}
         >
-          <SelectTrigger className="w-full bg-white/80">
+          <SelectTrigger className={`w-full bg-white/80 ${disabled ? 'cursor-not-allowed' : ''}`}>
             <SelectValue placeholder="Select a date" />
           </SelectTrigger>
           <SelectContent>

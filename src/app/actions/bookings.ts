@@ -42,7 +42,8 @@ function calculateBookingEndTime(startTime: Date, serviceIds: number[], services
     const service = services.find((s) => s.id === serviceId)
     if (!service) return total
     const d = new Date(service.duration)
-    return total + d.getHours() * 60 + d.getMinutes()
+    // Use UTC methods to avoid timezone issues with Time type
+    return total + d.getUTCHours() * 60 + d.getUTCMinutes()
   }, 0)
 
   const endTime = new Date(startTime)
@@ -53,13 +54,23 @@ function calculateBookingEndTime(startTime: Date, serviceIds: number[], services
 /**
  * Check if a booking conflicts with existing bookings for the same employee
  */
+type BookingWithServices = {
+  id: number
+  date: Date
+  bookingServices: Array<{
+    serviceId: number
+    service: {
+      duration: Date
+    }
+  }>
+}
+
 async function checkBookingConflict(
   employeeId: number,
   startTime: Date,
   endTime: Date
-): Promise<{ hasConflict: boolean; conflictingBooking?: any }> {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const conflictingBookings = await (prisma.booking.findMany as any)({
+): Promise<{ hasConflict: boolean; conflictingBooking?: BookingWithServices }> {
+  const conflictingBookings = await prisma.booking.findMany({
     where: {
       employeeId,
       date: {
@@ -81,8 +92,8 @@ async function checkBookingConflict(
     const existingStart = new Date(existingBooking.date)
     const existingEnd = calculateBookingEndTime(
       existingStart,
-      existingBooking.bookingServices.map((bs: any) => bs.serviceId),
-      existingBooking.bookingServices.map((bs: any) => ({
+      existingBooking.bookingServices.map((bs) => bs.serviceId),
+      existingBooking.bookingServices.map((bs) => ({
         id: bs.serviceId,
         duration: bs.service.duration,
       }))
@@ -161,6 +172,9 @@ async function validateBooking(data: {
     return { valid: false, error: "Bookings can only be made up to 1 month in advance" }
   }
 
+  // Calculate booking end time
+  const bookingEndTime = calculateBookingEndTime(bookingDateTime, data.serviceIds, services)
+
   // Check salon opening hours if set
   if (salon.openingTime && salon.closingTime) {
     const openingTime = new Date(salon.openingTime)
@@ -182,14 +196,21 @@ async function validateBooking(data: {
     const closingMinutesSinceMidnight = closingHours * 60 + closingMinutes
     const bookingMinutesSinceMidnight = bookingHours * 60 + bookingMinutes
 
-    // Check if booking time is outside operating hours
+    // Check if booking start time is outside operating hours
     if (bookingMinutesSinceMidnight < openingMinutesSinceMidnight || bookingMinutesSinceMidnight >= closingMinutesSinceMidnight) {
       return { valid: false, error: "Booking time is outside salon operating hours" }
     }
-  }
 
-  // Calculate booking end time
-  const bookingEndTime = calculateBookingEndTime(bookingDateTime, data.serviceIds, services)
+    // Check if booking end time would exceed closing time
+    // Create closing time on the booking date for comparison
+    const closingDateTime = new Date(bookingDateTime)
+    closingDateTime.setHours(closingHours, closingMinutes, 0, 0)
+    
+    // If booking end time exceeds closing time, it's invalid
+    if (bookingEndTime > closingDateTime) {
+      return { valid: false, error: "Selected time and services would exceed salon closing time" }
+    }
+  }
 
   // Check for conflicts
   const conflictCheck = await checkBookingConflict(data.employeeId, bookingDateTime, bookingEndTime)
@@ -267,7 +288,7 @@ export async function createBookingAction(data: {
               serviceId,
             })),
           },
-        } as any,
+        },
         include: {
           bookingServices: {
             include: {
@@ -294,7 +315,7 @@ export async function createBookingAction(data: {
             },
           },
         },
-      } as any)
+      })
     })
 
     // Revalidate relevant paths
@@ -320,7 +341,13 @@ export async function createBookingAction(data: {
  */
 export async function getSalonBookings(salonId: number, startDate?: Date, endDate?: Date) {
   try {
-    const where: any = {
+    const where: {
+      salonId: number
+      date?: {
+        gte?: Date
+        lte?: Date
+      }
+    } = {
       salonId,
     }
 
@@ -334,8 +361,7 @@ export async function getSalonBookings(salonId: number, startDate?: Date, endDat
       }
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const bookings = await (prisma.booking.findMany as any)({
+    const bookings = await prisma.booking.findMany({
       where,
       include: {
         bookingServices: {
@@ -405,10 +431,10 @@ export async function getAvailableTimeSlots(
       return { ok: false, error: "Services not found", timeSlots: [] }
     }
 
-    // Calculate total duration
+    // Calculate total duration (use UTC methods to avoid timezone issues)
     const totalMinutes = services.reduce((total, service) => {
       const d = new Date(service.duration)
-      return total + d.getHours() * 60 + d.getMinutes()
+      return total + d.getUTCHours() * 60 + d.getUTCMinutes()
     }, 0)
 
     // Get existing bookings for this employee on this date
@@ -417,8 +443,7 @@ export async function getAvailableTimeSlots(
     const endOfDay = new Date(date)
     endOfDay.setHours(23, 59, 59, 999)
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const existingBookings = await (prisma.booking.findMany as any)({
+    const existingBookings = await prisma.booking.findMany({
       where: {
         employeeId,
         date: {
@@ -444,8 +469,8 @@ export async function getAvailableTimeSlots(
       const bookingStart = new Date(booking.date)
       const bookingEnd = calculateBookingEndTime(
         bookingStart,
-        booking.bookingServices.map((bs: any) => bs.serviceId),
-        booking.bookingServices.map((bs: any) => ({
+        booking.bookingServices.map((bs) => bs.serviceId),
+        booking.bookingServices.map((bs) => ({
           id: bs.serviceId,
           duration: bs.service.duration,
         }))
@@ -466,7 +491,7 @@ export async function getAvailableTimeSlots(
     openingTime.setFullYear(date.getFullYear(), date.getMonth(), date.getDate())
     closingTime.setFullYear(date.getFullYear(), date.getMonth(), date.getDate())
 
-    let currentTime = new Date(openingTime)
+    const currentTime = new Date(openingTime)
     while (currentTime.getTime() + totalMinutes * 60 * 1000 <= closingTime.getTime()) {
       const slotEnd = new Date(currentTime.getTime() + totalMinutes * 60 * 1000)
 
@@ -496,6 +521,114 @@ export async function getAvailableTimeSlots(
       ok: false,
       error: error instanceof Error ? error.message : "Failed to get available time slots",
       timeSlots: [],
+    }
+  }
+}
+
+/**
+ * Get the next upcoming booking for the current customer
+ */
+export async function getNextUpcomingBooking() {
+  try {
+    const user = await getCurrentUser()
+
+    if (!user || user.role !== "CUSTOMER") {
+      return { ok: true, booking: null }
+    }
+
+    const now = new Date()
+
+    const booking = await prisma.booking.findFirst({
+      where: {
+        customerId: user.id,
+        date: {
+          gte: now,
+        },
+      },
+      include: {
+        salon: {
+          select: {
+            id: true,
+            name: true,
+            currency: true,
+          },
+        },
+        employee: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+        bookingServices: {
+          include: {
+            service: {
+              select: {
+                id: true,
+                name: true,
+                price: true,
+                duration: true,
+                category: {
+                  select: {
+                    name: true,
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+      orderBy: {
+        date: "asc",
+      },
+    })
+
+    return { ok: true, booking }
+  } catch (error) {
+    console.error("Error fetching next upcoming booking:", error)
+    return {
+      ok: false,
+      error: error instanceof Error ? error.message : "Failed to fetch upcoming booking",
+      booking: null,
+    }
+  }
+}
+
+/**
+ * Get random salons for exploration
+ */
+export async function getRandomSalons(limit: number = 6) {
+  try {
+    // Get total count of salons
+    const totalCount = await prisma.salon.count()
+    
+    if (totalCount === 0) {
+      return { ok: true, salons: [] }
+    }
+    
+    // Get all salons
+    const allSalons = await prisma.salon.findMany({
+      select: {
+        id: true,
+        name: true,
+        address: true,
+        city: true,
+      },
+    })
+
+    // Shuffle the array using Fisher-Yates algorithm
+    const shuffled = [...allSalons]
+    for (let i = shuffled.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1))
+      ;[shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]]
+    }
+    
+    return { ok: true, salons: shuffled.slice(0, limit) }
+  } catch (error) {
+    console.error("Error fetching random salons:", error)
+    return {
+      ok: false,
+      error: error instanceof Error ? error.message : "Failed to fetch salons",
+      salons: [],
     }
   }
 }
