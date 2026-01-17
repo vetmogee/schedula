@@ -32,7 +32,7 @@ export default async function RootLayout({
   const cookieStore = await cookies();
   const token = cookieStore.get("auth-token")?.value;
 
-  let currentUser: { name: string | null; role: "CUSTOMER" | "SALON" } | null =
+  let currentUser: { name: string | null; role: "CUSTOMER" | "SALON"; salonId?: number } | null =
     null;
 
   if (token) {
@@ -42,12 +42,16 @@ export default async function RootLayout({
     if (authUser) {
       const dbUser = await prisma.user.findUnique({
         where: { id: authUser.id },
+        include: {
+          salon: true,
+        },
       });
 
       if (dbUser) {
         currentUser = {
           name: dbUser.name ?? null,
           role: dbUser.role as "CUSTOMER" | "SALON",
+          salonId: dbUser.salon?.id,
         };
       }
     }

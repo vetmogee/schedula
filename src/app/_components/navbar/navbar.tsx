@@ -3,10 +3,12 @@
 import Link from "next/link";
 import { useState, useRef, useEffect } from "react";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { Home, Paintbrush, Calendar, Building2 } from "lucide-react";
 
 type CurrentUser = {
   name: string | null;
   role: "CUSTOMER" | "SALON";
+  salonId?: number;
 } | null;
 
 function Dropdown({
@@ -127,6 +129,11 @@ export default function Navbar({ currentUser }: { currentUser?: CurrentUser }) {
       <Link href="/services" onClick={handleLinkClick} className="block px-4 py-2 hover:bg-gray-100 text-left w-full">
         Services
       </Link>
+      {currentUser.salonId && (
+        <Link href={`/salons/${currentUser.salonId}`} onClick={handleLinkClick} className="block px-4 py-2 hover:bg-gray-100 text-left w-full">
+          My Profile
+        </Link>
+      )}
     </>
   ) : (
     <>
@@ -145,46 +152,58 @@ export default function Navbar({ currentUser }: { currentUser?: CurrentUser }) {
   );
 
   return (
-    <nav className="relative z-50 w-full h-16 px-4 md:px-8 flex items-center justify-between border-b bg-[#ffb3c6] backdrop-blur text-black">
+    <div className="relative z-50 w-full h-20 px-4 md:px-8 grid grid-cols-3 items-center border-b bg-[#ffb3c6] backdrop-blur text-black">
       {/* Left */}
       <Link 
         href={currentUser && currentUser.role === "SALON" ? "/dashboard" : "/"} 
-        className="text-base md:text-xl font-bold tracking-wide"
+        className="text-base md:text-xl justify-self-start font-bold tracking-wide"
       >
         schedula
       </Link>
 
       {/* Center - Hidden on mobile */}
       {currentUser && currentUser.role === "SALON" ? (
-        <div className="hidden md:flex gap-8 font-medium">
-          <Link href="/dashboard" className="hover:text-black/70 transition">
-            Dashboard
+        <div className="hidden md:flex gap-8 font-medium justify-self-center">
+          <Link href="/dashboard" className="hover:text-black/70 transition flex flex-col items-center gap-1">
+            <Home className="w-5 h-5" />
+            <span>Dashboard</span>
           </Link>
-          <Link href="/calendar" className="hover:text-black/70 transition">
-            Calendar
+          <Link href="/calendar" className="hover:text-black/70 transition flex flex-col items-center gap-1">
+            <Calendar className="w-5 h-5" />
+            <span>Calendar</span>
           </Link>
-          <Link href="/services" className="hover:text-black/70 transition">
-            Services
+          <Link href="/services" className="hover:text-black/70 transition flex flex-col items-center gap-1">
+            <Paintbrush className="w-5 h-5" />
+            <span>Services</span>
           </Link>
+          {currentUser.salonId && (
+            <Link href={`/salons/${currentUser.salonId}`} className="hover:text-black/70 transition flex flex-col items-center gap-1">
+              <Building2 className="w-5 h-5" />
+              <span>My Profile</span>
+            </Link>
+          )}
         </div>
       ) : (
-        <div className="hidden md:flex gap-8 font-medium">
-          <Link href="/" className="hover:text-black/70 transition">
-            Home
+        <div className="hidden md:flex gap-8 font-medium justify-self-center">
+          <Link href="/" className="hover:text-black/70 transition flex flex-col items-center gap-1">
+            <Home className="w-5 h-5" />
+            <span>Home</span>
           </Link>
-          <Link href="/salons" className="hover:text-black/70 transition">
-            Salons
+          <Link href="/salons" className="hover:text-black/70 transition flex flex-col items-center gap-1">
+            <Paintbrush className="w-5 h-5" />
+            <span>Salons</span>
           </Link>
           {currentUser && currentUser.role === "CUSTOMER" && (
-            <Link href="/user" className="hover:text-black/70 transition">
-              My Bookings
+            <Link href="/user" className="hover:text-black/70 transition flex flex-col items-center gap-1">
+              <Calendar className="w-5 h-5" />
+              <span>My Bookings</span>
             </Link>
           )}
         </div>
       )}
 
       {/* Right */}
-      <div className="flex gap-6 items-center">
+      <div className="flex gap-6 items-center justify-self-end">
         {currentUser ? (
           <div
             ref={userMenuRef}
@@ -239,6 +258,6 @@ export default function Navbar({ currentUser }: { currentUser?: CurrentUser }) {
           </>
         )}
       </div>
-    </nav>
+    </div>
   );
 }

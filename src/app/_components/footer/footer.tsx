@@ -51,11 +51,6 @@ export default function Footer() {
                                     Privacy Policy
                                 </Link>
                             </li>
-                            <li>
-                                <Link href="/settings" className="text-black/80 hover:text-black transition-colors text-sm">
-                                    Settings
-                                </Link>
-                            </li>
                         </ul>
                     </div>
                 </div>

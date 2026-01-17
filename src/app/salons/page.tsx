@@ -1,10 +1,16 @@
 import { prisma } from "@/lib/prisma";
-import Link from "next/link";
+import SalonListWithSearch from "@/app/_components/salon/SalonListWithSearch";
 
 export default async function SalonsPage() {
   const salons = await prisma.salon.findMany({
     orderBy: {
       name: "asc",
+    },
+    select: {
+      id: true,
+      name: true,
+      address: true,
+      city: true,
     },
   });
 
@@ -20,38 +26,7 @@ export default async function SalonsPage() {
           </p>
         </header>
 
-        {salons.length === 0 ? (
-          <div className="rounded-2xl bg-white/80 backdrop-blur shadow-md p-8 border border-white/60 text-center">
-            <p className="text-gray-600">No salons available yet.</p>
-          </div>
-        ) : (
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-            {salons.map((salon) => (
-              <Link
-                key={salon.id}
-                href={`/salons/${salon.id}`}
-                className="rounded-2xl bg-white/80 backdrop-blur shadow-md p-5 border border-white/60 hover:shadow-lg transition-shadow block"
-              >
-                <h2 className="text-lg font-semibold text-gray-900 mb-2">
-                  {salon.name}
-                </h2>
-                {salon.address && (
-                  <p className="text-sm text-gray-700 mb-1">
-                    {salon.address}
-                  </p>
-                )}
-                {salon.city && (
-                  <p className="text-sm text-gray-600">{salon.city}</p>
-                )}
-                {!salon.address && !salon.city && (
-                  <p className="text-xs text-gray-500 italic">
-                    No location information available
-                  </p>
-                )}
-              </Link>
-            ))}
-          </div>
-        )}
+        <SalonListWithSearch salons={salons} />
       </div>
     </main>
   );

@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import Link from "next/link";
 import { CalendarUser } from "@/app/_components/salon/CalendarUser";
 import { ReservationButton } from "@/app/_components/salon/ReservationButton";
+import { SalonGallery } from "@/app/_components/salon/SalonGallery";
 import { cookies } from "next/headers";
 import { supabase } from "@/lib/supabase/server";
 
@@ -78,6 +79,11 @@ export default async function SalonDetailPage({ params }: SalonDetailPageProps) 
         },
         orderBy: {
           date: "asc",
+        },
+      },
+      pictures: {
+        orderBy: {
+          createdAt: "desc",
         },
       },
     },
@@ -191,7 +197,29 @@ export default async function SalonDetailPage({ params }: SalonDetailPageProps) 
           </div>
         </div>
 
-
+        {/* Salon Pictures Section */}
+        <SalonGallery
+          pictures={salon.pictures.map((picture) => {
+            // Convert Buffer to base64 data URL in Server Component
+            const base64 = Buffer.from(picture.data).toString("base64");
+            // Normalize mimeType: handle variations and default to PNG/JPEG/JPG
+            let mimeType = picture.mimeType || "image/png";
+            // Normalize common variations
+            if (mimeType === "image/jpg") {
+              mimeType = "image/jpeg";
+            }
+            // Default to PNG if mimeType is not a recognized image format
+            if (!mimeType.startsWith("image/")) {
+              mimeType = "image/png";
+            }
+            const dataUrl = `data:${mimeType};base64,${base64}`;
+            return {
+              id: picture.id,
+              dataUrl,
+            };
+          })}
+          salonName={salon.name}
+        />
 
         {salon.services.length === 0 && salon.employees.length === 0 && (
           <div className="rounded-2xl bg-white/80 backdrop-blur shadow-md p-6 border border-white/60 text-center">

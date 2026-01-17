@@ -37,6 +37,7 @@ model Salon {
   user        User              @relation(fields: [userId], references: [id])
   services    Service[]
   categories  ServiceCategory[]
+  pictures    SalonPicture[]
 
   @@map("salons")
 }
@@ -102,6 +103,17 @@ model BookingService {
 
   @@unique([bookingId, serviceId])
   @@map("booking_services")
+}
+
+model SalonPicture {
+  id        Int      @id @default(autoincrement())
+  salonId   Int
+  data      Bytes    @db.ByteA
+  mimeType  String // e.g., "image/jpeg", "image/png", "image/webp"
+  createdAt DateTime @default(now())
+  salon     Salon    @relation(fields: [salonId], references: [id], onDelete: Cascade)
+
+  @@map("salon_pictures")
 }
 
 enum UserRole {
