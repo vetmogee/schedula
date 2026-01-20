@@ -38,11 +38,8 @@ function getBookingStyle(
   const bookingMinutes = bookingDate.getHours() * 60 + bookingDate.getMinutes();
   const startOffset = bookingMinutes - openMinutes;
 
-  // Sum up all service durations (use UTC methods to avoid timezone issues)
-  const durationMinutes = booking.services.reduce((total, service) => {
-    const d = new Date(service.duration);
-    return total + d.getUTCHours() * 60 + d.getUTCMinutes();
-  }, 0);
+  // Sum up all service durations
+  const durationMinutes = getTotalDurationMinutes(booking);
 
   const topPercent = (startOffset / totalMinutes) * 100;
   const heightPercent = (durationMinutes / totalMinutes) * 100;
@@ -61,11 +58,7 @@ function formatTime(date: Date) {
 }
 
 function formatDuration(booking: Booking) {
-  const totalMinutes = booking.services.reduce((total, service) => {
-    const d = new Date(service.duration);
-    // Use UTC methods to avoid timezone issues with Time type
-    return total + d.getUTCHours() * 60 + d.getUTCMinutes();
-  }, 0);
+  const totalMinutes = getTotalDurationMinutes(booking);
   if (totalMinutes < 60) {
     return `${totalMinutes} min`;
   }
@@ -74,11 +67,31 @@ function formatDuration(booking: Booking) {
   return `${hours}h${minutes > 0 ? ` ${minutes}min` : ""}`.trim();
 }
 
-// Check if booking is in the past
-function isPastBooking(booking: Booking) {
-  const bookingDate = new Date(booking.date);
+// Calculate total duration in minutes for a booking
+function getTotalDurationMinutes(booking: Booking): number {
+  return booking.services.reduce((total, service) => {
+    const d = new Date(service.duration);
+    return total + d.getUTCHours() * 60 + d.getUTCMinutes();
+  }, 0);
+}
+
+// Determine booking status: 'past', 'current', or 'future'
+function getBookingStatus(booking: Booking): 'past' | 'current' | 'future' {
+  const bookingStart = new Date(booking.date);
   const now = new Date();
-  return bookingDate.getTime() < now.getTime();
+  const durationMinutes = getTotalDurationMinutes(booking);
+  
+  // Calculate booking end time
+  const bookingEnd = new Date(bookingStart);
+  bookingEnd.setMinutes(bookingEnd.getMinutes() + durationMinutes);
+  
+  if (bookingEnd.getTime() < now.getTime()) {
+    return 'past'; // Booking has ended
+  } else if (bookingStart.getTime() <= now.getTime()) {
+    return 'current'; // Booking is currently running
+  } else {
+    return 'future'; // Booking hasn't started yet
+  }
 }
 
 export function CalendarEvent({
@@ -141,20 +154,39 @@ export function CalendarEvent({
               const serviceNames = booking.services
                 .map((s) => s.name)
                 .join(", ");
-              const isPast = isPastBooking(booking);
+              const bookingStatus = getBookingStatus(booking);
               const isUnassigned = !booking.employee;
+
+              // Determine color classes based on booking status
+              const getStatusClasses = () => {
+                switch (bookingStatus) {
+                  case 'past':
+                    return "bg-gray-500 text-gray-300 hover:bg-gray-600 border-gray-600/50";
+                  case 'current':
+                    return "bg-blue-500 text-white hover:bg-blue-600 border-blue-600/50";
+                  case 'future':
+                    return "bg-[#ffb5c2] text-gray-900 hover:bg-[#eb9baa] border-gray-200";
+                }
+              };
+
+              const getStatusLabel = () => {
+                switch (bookingStatus) {
+                  case 'past':
+                    return " - Past";
+                  case 'current':
+                    return " - Currently Running";
+                  case 'future':
+                    return " - Upcoming";
+                }
+              };
 
               return (
                 <div
                   key={booking.id}
                   onClick={() => onBookingClick?.(booking)}
-                  className={`absolute left-1 right-1 pointer-events-auto rounded-md shadow-xl border p-2 overflow-hidden transition-colors cursor-pointer ${
-                    isPast
-                      ? "bg-gray-500 text-gray-300 hover:bg-gray-600 border-gray-600/50"
-                      : "bg-[#ffb5c2] text-gray-900 hover:bg-[#eb9baa] border-gray-200"
-                  }`}
+                  className={`absolute left-1 right-1 pointer-events-auto rounded-md shadow-xl border p-2 overflow-hidden transition-colors cursor-pointer ${getStatusClasses()}`}
                   style={style}
-                  title={`${timeLabel} - ${serviceNames} (${durationLabel})${isUnassigned ? " - Unassigned" : ""}${isPast ? " - Past" : ""}`}
+                  title={`${timeLabel} - ${serviceNames} (${durationLabel})${isUnassigned ? " - Unassigned" : ""}${getStatusLabel()}`}
                 >
                   <div className="text-xs font-semibold truncate">
                     {timeLabel}

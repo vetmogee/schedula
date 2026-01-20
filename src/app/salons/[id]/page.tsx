@@ -29,6 +29,9 @@ async function getCurrentUser() {
 
     const dbUser = await prisma.user.findUnique({
       where: { id: authUser.id },
+      include: {
+        salon: true,
+      },
     });
 
     return dbUser;
@@ -128,18 +131,23 @@ export default async function SalonDetailPage({ params }: SalonDetailPageProps) 
 
   // Get current user for authentication check
   const currentUser = await getCurrentUser();
+  
+  // Check if current user is the salon owner viewing their own salon
+  const isSalonOwner = currentUser?.role === "SALON" && currentUser?.salon?.id === salonId;
 
   return (
     <main className="min-h-screen bg-gradient-to-br from-[#ffb5c2] to-[#fdd7de] py-10 px-4">
       <div className="max-w-4xl mx-auto space-y-6">
-        <div className="flex items-center gap-4 mb-4">
-          <Link
-            href="/salons"
-            className="text-pink-600 hover:text-pink-700 font-medium underline text-sm"
-          >
-            ← Back to Salons
-          </Link>
-        </div>
+        {!isSalonOwner && (
+          <div className="flex items-center gap-4 mb-4">
+            <Link
+              href="/salons"
+              className="text-pink-600 hover:text-pink-700 font-medium underline text-sm"
+            >
+              ← Back to Salons
+            </Link>
+          </div>
+        )}
 
         <div className="rounded-2xl bg-white/80 backdrop-blur shadow-md p-6 border border-white/60">
           <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">

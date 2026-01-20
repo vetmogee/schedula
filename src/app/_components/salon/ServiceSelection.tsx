@@ -62,7 +62,7 @@ export function ServiceSelectionMenu({
 
   return (
     <div className="space-y-4 h-full flex flex-col">
-        <h2 className="text-xl font-semibold text-gray-900">Select Services</h2>
+        <h2 className=" text-xl font-semibold text-gray-900">Select Services</h2>
       {/* Services List - Scrollable */}
       <div className="rounded-2xl bg-white/80 backdrop-blur shadow-md p-6 border border-white/60 flex-1 min-h-0">
           <div className="space-y-6 max-h-[60vh] overflow-y-auto pr-2">

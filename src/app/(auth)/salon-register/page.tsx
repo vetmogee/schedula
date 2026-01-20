@@ -10,6 +10,16 @@ import { Label } from "@/app/_components/ui/label"
 export default function SalonRegisterPage() {
   const [errors, setErrors] = useState<Record<string, string[]>>({})
   const [isPending, startTransition] = useTransition()
+  const [password, setPassword] = useState("")
+
+  // Password validation functions
+  const passwordChecks = {
+    minLength: password.length >= 8,
+    hasUppercase: /[A-Z]/.test(password),
+    hasLowercase: /[a-z]/.test(password),
+    hasNumber: /\d/.test(password),
+    hasSymbol: /[^A-Za-z0-9]/.test(password),
+  }
 
   async function onSubmit(formData: FormData) {
     setErrors({})
@@ -64,11 +74,31 @@ export default function SalonRegisterPage() {
               name="password"
               type="password"
               placeholder="Password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
               required
             />
             {errors.password?.[0] && (
               <p className="text-red-600 text-sm">{errors.password[0]}</p>
             )}
+            <div className="mt-2 space-y-1 text-sm">
+              <p className="text-gray-600 font-medium mb-1">Password requirements:</p>
+              <p className={passwordChecks.minLength ? "text-green-600" : "text-gray-500"}>
+                • Minimum 8 characters
+              </p>
+              <p className={passwordChecks.hasUppercase ? "text-green-600" : "text-gray-500"}>
+                • Must include an uppercase letter
+              </p>
+              <p className={passwordChecks.hasLowercase ? "text-green-600" : "text-gray-500"}>
+                • Must include a lowercase letter
+              </p>
+              <p className={passwordChecks.hasNumber ? "text-green-600" : "text-gray-500"}>
+                • Must include a number
+              </p>
+              <p className={passwordChecks.hasSymbol ? "text-green-600" : "text-gray-500"}>
+                • Must include a symbol
+              </p>
+            </div>
           </div>
 
           <Button type="submit" disabled={isPending} className="w-full">

@@ -199,7 +199,7 @@ export function DateTimeSelection({
 
   return (
     <div className={`space-y-4 ${disabled ? 'opacity-50 pointer-events-none' : ''}`}>
-      <h3 className="text-lg font-semibold text-gray-900">Select Date & Time</h3>
+      <h3 className="-ml-6 text-xl font-semibold text-gray-900">Select Date & Time</h3>
       
       {disabled && (
         <p className="text-sm text-gray-500 text-center py-2">

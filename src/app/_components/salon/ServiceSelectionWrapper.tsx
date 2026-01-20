@@ -1,6 +1,6 @@
 "use client";
 
-import { ServiceSelectionMenu } from "./ServiceSelectionMenu";
+import { ServiceSelectionMenu } from "./ServiceSelection";
 
 type Service = {
   id: number;

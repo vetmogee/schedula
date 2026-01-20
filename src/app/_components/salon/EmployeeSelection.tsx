@@ -26,7 +26,7 @@ export function EmployeeSelection({
 
   return (
     <div className="space-y-3">
-      <h3 className="text-lg font-semibold text-gray-900">Select Employee</h3>
+      <h3 className="-ml-6 text-xl font-semibold text-gray-900">Select Employee</h3>
       <div className="grid gap-3 sm:grid-cols-2">
         {employees.map((employee) => {
           const isSelected = selectedEmployeeId === employee.id;

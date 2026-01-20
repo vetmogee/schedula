@@ -8,7 +8,7 @@ import {
   SheetTitle,
   SheetDescription,
 } from "@/app/_components/ui/sheet";
-import { ServiceSelectionMenu } from "./ServiceSelectionMenu";
+import { ServiceSelectionMenu } from "./ServiceSelection";
 import { EmployeeSelection } from "./EmployeeSelection";
 import { DateTimeSelection } from "./DateTimeSelection";
 import { Button } from "@/app/_components/ui/button";
