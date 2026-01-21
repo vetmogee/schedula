@@ -4,6 +4,7 @@ import Link from "next/link";
 import { CalendarUser } from "@/app/_components/salon/CalendarUser";
 import { ReservationButton } from "@/app/_components/salon/ReservationButton";
 import { SalonGallery } from "@/app/_components/salon/SalonGallery";
+import { Button } from "@/app/_components/ui/button";
 import { cookies } from "next/headers";
 import { supabase } from "@/lib/supabase/server";
 
@@ -135,9 +136,41 @@ export default async function SalonDetailPage({ params }: SalonDetailPageProps) 
   // Check if current user is the salon owner viewing their own salon
   const isSalonOwner = currentUser?.role === "SALON" && currentUser?.salon?.id === salonId;
 
+  // Build address string for Google Maps
+  const addressParts = [];
+  if (salon.address) addressParts.push(salon.address);
+  if (salon.postalCode) addressParts.push(salon.postalCode);
+  if (salon.city) addressParts.push(salon.city);
+  const fullAddress = addressParts.join(", ");
+
+  // Generate Google Maps Embed URL
+  const googleMapsApiKey = process.env.GOOGLE_MAP_API;
+  const embedMapUrl = googleMapsApiKey && fullAddress
+    ? `https://www.google.com/maps/embed/v1/place?key=${googleMapsApiKey}&q=${encodeURIComponent(fullAddress)}&zoom=15`
+    : fullAddress
+    ? `https://www.google.com/maps?q=${encodeURIComponent(fullAddress)}&output=embed`
+    : null;
+
   return (
-    <main className="min-h-screen bg-gradient-to-br from-[#ffb5c2] to-[#fdd7de] py-10 px-4">
-      <div className="max-w-4xl mx-auto space-y-6">
+    <main className="min-h-screen bg-gradient-to-br from-[#ffb5c2] to-[#fdd7de] pb-10">
+      {/* Google Maps Embed - Full Width */}
+      {embedMapUrl && (
+        <div className="w-full mb-6">
+          <iframe
+            src={embedMapUrl}
+            width="100%"
+            height="400"
+            style={{ border: 0 }}
+            allowFullScreen
+            loading="lazy"
+            referrerPolicy="no-referrer-when-downgrade"
+            title={`Map showing location of ${salon.name}`}
+            className="w-full"
+          />
+        </div>
+      )}
+
+      <div className="max-w-4xl mx-auto px-4 space-y-6">
         {!isSalonOwner && (
           <div className="flex items-center gap-4 mb-4">
             <Link
@@ -159,14 +192,15 @@ export default async function SalonDetailPage({ params }: SalonDetailPageProps) 
           )}
 
           <div className="grid gap-4 md:grid-cols-2 mb-6">
-            {(salon.address || salon.city) && (
+            {(salon.address || salon.city || salon.postalCode) && (
               <div>
                 <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-2">
                   Location
                 </h3>
                 <p className="text-gray-900">
                   {salon.address && <span>{salon.address}</span>}
-                  {salon.address && salon.city && <span>, </span>}
+                  {salon.address && (salon.city || salon.postalCode) && <span>, </span>}
+                  {salon.postalCode && <span>{salon.postalCode} </span>}
                   {salon.city && <span>{salon.city}</span>}
                 </p>
               </div>
@@ -277,26 +311,37 @@ export default async function SalonDetailPage({ params }: SalonDetailPageProps) 
           {/* Create Reservation Button - Right */}
           {salon.services.length > 0 && (
             <div className="flex items-center justify-center">
-              <ReservationButton
-                services={salon.services}
-                employees={salon.employees.map((e) => ({
-                  id: e.id,
-                  name: e.name,
-                }))}
-                currency={salon.currency}
-                openingTime={openingTimeForCalendar}
-                closingTime={closingTimeForCalendar}
-                bookings={salon.bookings.map((b) => ({
-                  id: b.id,
-                  date: b.date,
-                  employeeId: b.employee.id,
-                  services: b.bookingServices.map((bs) => ({
-                    duration: bs.service.duration,
-                  })),
-                }))}
-                salonId={salonId}
-                currentUser={currentUser ? { id: currentUser.id, role: currentUser.role } : null}
-              />
+              {currentUser ? (
+                <ReservationButton
+                  services={salon.services}
+                  employees={salon.employees.map((e) => ({
+                    id: e.id,
+                    name: e.name,
+                  }))}
+                  currency={salon.currency}
+                  openingTime={openingTimeForCalendar}
+                  closingTime={closingTimeForCalendar}
+                  bookings={salon.bookings.map((b) => ({
+                    id: b.id,
+                    date: b.date,
+                    employeeId: b.employee.id,
+                    services: b.bookingServices.map((bs) => ({
+                      duration: bs.service.duration,
+                    })),
+                  }))}
+                  salonId={salonId}
+                  currentUser={{ id: currentUser.id, role: currentUser.role }}
+                />
+              ) : (
+                <Button
+                  asChild
+                  className="w-full bg-black hover:bg-gray-700 text-white font-semibold py-6 text-lg"
+                >
+                  <Link href="/login">
+                    Log in to create reservation
+                  </Link>
+                </Button>
+              )}
             </div>
           )}
         </div>

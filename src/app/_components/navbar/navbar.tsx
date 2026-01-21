@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useState, useRef, useEffect } from "react";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { Home, Paintbrush, Calendar, Building2, Menu, Settings, LogOut, BarChart3, UserCircle } from "lucide-react";
+import { Home, Paintbrush, Calendar, Menu, Settings, LogOut, BarChart3, UserCircle } from "lucide-react";
 
 type CurrentUser = {
   name: string | null;

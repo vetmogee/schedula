@@ -53,10 +53,17 @@ async function register(formData: FormData, role: "CUSTOMER" | "SALON") {
 
   // 3️⃣ If this is a salon account, create the corresponding Salon row
   if (role === "SALON") {
+    const address = (data.address || "").toString().trim() || undefined
+    const city = (data.city || "").toString().trim() || undefined
+    const postalCode = (data.postalCode || "").toString().trim() || undefined
+
     await prisma.salon.create({
       data: {
         userId: appUser.id,
         name,
+        address,
+        city,
+        postalCode,
       },
     })
   }

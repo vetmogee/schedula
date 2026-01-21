@@ -122,7 +122,7 @@ function hasTimeConflict(
  */
 async function createBookingsForFancySalon() {
   const SALON_ID = 3
-  const BOOKING_DATE = new Date('2026-01-17T00:00:00Z') // January 17, 2026
+  const BOOKING_DATE = new Date('2026-01-21T00:00:00Z') // January 21, 2026
 
   console.log(`\nFinding salon with id ${SALON_ID}...`)
   
@@ -159,7 +159,7 @@ async function createBookingsForFancySalon() {
   // Get salon opening and closing times (default to 9 AM - 6 PM if not set)
   const openingTime = salon.openingTime
     ? new Date(salon.openingTime)
-    : new Date(Date.UTC(1970, 0, 1, 9, 0, 0, 0))
+    : new Date(Date.UTC(1970, 0, 1, 8, 0, 0, 0))
   const closingTime = salon.closingTime
     ? new Date(salon.closingTime)
     : new Date(Date.UTC(1970, 0, 1, 18, 0, 0, 0))

@@ -18,6 +18,7 @@ type SalonSettingsProps = {
     description: string | null
     address: string | null
     city: string | null
+    postalCode: string | null
     phone: string | null
     currency: string | null
     openingTime: Date | null
@@ -48,6 +49,7 @@ export function SalonSettings({
   const [description, setDescription] = useState(salon?.description ?? "")
   const [address, setAddress] = useState(salon?.address ?? "")
   const [city, setCity] = useState(salon?.city ?? "")
+  const [postalCode, setPostalCode] = useState(salon?.postalCode ?? "")
   const [phone, setPhone] = useState(salon?.phone ?? "")
   const [currency, setCurrency] = useState(salon?.currency ?? "USD")
   const [openingTime, setOpeningTime] = useState(
@@ -197,6 +199,17 @@ export function SalonSettings({
                 placeholder="City"
               />
             </div>
+          </div>
+
+          <div className="space-y-1.5">
+            <Label htmlFor="postalCode">Postal Code</Label>
+            <Input
+              id="postalCode"
+              name="postalCode"
+              value={postalCode}
+              onChange={(e) => setPostalCode(e.target.value)}
+              placeholder="Postal code"
+            />
           </div>
 
           <div className="space-y-1.5">

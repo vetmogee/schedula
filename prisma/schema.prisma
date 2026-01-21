@@ -28,6 +28,7 @@ model Salon {
   description String?
   address     String?
   city        String?
+  postalCode  String?
   phone       BigInt?
   currency    String?           @default("USD")
   closingTime DateTime?         @db.Time(6)

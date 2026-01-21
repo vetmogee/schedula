@@ -35,6 +35,7 @@ async function updateSalonSettings(formData: FormData) {
   const description = (formData.get("description") || "").toString().trim()
   const address = (formData.get("address") || "").toString().trim()
   const city = (formData.get("city") || "").toString().trim()
+  const postalCode = (formData.get("postalCode") || "").toString().trim()
   const phoneRaw = (formData.get("phone") || "").toString().trim()
   const openingTime = (formData.get("openingTime") || "").toString()
   const closingTime = (formData.get("closingTime") || "").toString()
@@ -66,6 +67,7 @@ async function updateSalonSettings(formData: FormData) {
         description: description || undefined,
         address: address || undefined,
         city: city || undefined,
+        postalCode: postalCode || undefined,
         phone: phone ?? undefined,
         openingTime: openingDate ?? undefined,
         closingTime: closingDate ?? undefined,
@@ -507,6 +509,7 @@ export default async function SettingsPage() {
                     description: dbUser.salon.description ?? null,
                     address: dbUser.salon.address ?? null,
                     city: dbUser.salon.city ?? null,
+                    postalCode: dbUser.salon.postalCode ?? null,
                     phone:
                       dbUser.salon.phone != null
                         ? String(dbUser.salon.phone)

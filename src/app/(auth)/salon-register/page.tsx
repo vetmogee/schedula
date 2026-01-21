@@ -67,6 +67,44 @@ export default function SalonRegisterPage() {
             )}
           </div>
 
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <div className="space-y-2 my-5">
+              <Label htmlFor="address">Address</Label>
+              <Input
+                id="address"
+                name="address"
+                placeholder="Street and number"
+              />
+              {errors.address?.[0] && (
+                <p className="text-red-600 text-sm">{errors.address[0]}</p>
+              )}
+            </div>
+
+            <div className="space-y-2 my-5">
+              <Label htmlFor="city">City</Label>
+              <Input
+                id="city"
+                name="city"
+                placeholder="City"
+              />
+              {errors.city?.[0] && (
+                <p className="text-red-600 text-sm">{errors.city[0]}</p>
+              )}
+            </div>
+          </div>
+
+          <div className="space-y-2 my-5">
+            <Label htmlFor="postalCode">Postal Code</Label>
+            <Input
+              id="postalCode"
+              name="postalCode"
+              placeholder="Postal code"
+            />
+            {errors.postalCode?.[0] && (
+              <p className="text-red-600 text-sm">{errors.postalCode[0]}</p>
+            )}
+          </div>
+
           <div className="space-y-2 my-5">
             <Label htmlFor="password">Password</Label>
             <Input
