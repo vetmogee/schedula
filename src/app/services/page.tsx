@@ -4,6 +4,8 @@ import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { supabase } from "@/lib/supabase/server";
 import { SalonServicesManager } from "../_components/salon/SalonServicesManager";
+
+export const dynamic = 'force-dynamic';
 import {
   createServiceCategory,
   createService,
@@ -97,13 +99,13 @@ export default async function ServicesPage() {
     }));
 
   return (
-    <main className="min-h-screen bg-gradient-to-br from-[#ffb5c2] to-[#fdd7de] py-10 px-4">
+    <main className="min-h-screen bg-gradient-to-br from-[#ffb5c2] to-[#fdd7de] dark:from-background dark:to-background py-10 px-4">
       <div className="max-w-5xl mx-auto space-y-8">
         <header className="flex flex-col gap-2">
-          <h1 className="text-3xl md:text-4xl font-bold text-gray-900">
+          <h1 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-foreground">
             Services
           </h1>
-          <p className="text-gray-700">
+          <p className="text-gray-700 dark:text-muted-foreground">
             Manage your service categories and services for{" "}
             <span className="font-semibold">{salon.name}</span>.
           </p>

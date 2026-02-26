@@ -4,6 +4,8 @@ import { revalidatePath } from "next/cache"
 import { supabase } from "@/lib/supabase/server"
 import { prisma } from "@/lib/prisma"
 import { SalonSettings } from "@/app/_components/settings/SalonSettings"
+
+export const dynamic = 'force-dynamic'
 import { CustomerSettings } from "@/app/_components/settings/CustomerSettings"
 
 async function updateSalonSettings(formData: FormData) {
@@ -492,9 +494,9 @@ export default async function SettingsPage() {
   }
 
   return (
-    <main className="min-h-[60vh] flex items-center justify-center bg-gradient-to-br from-[#ffb5c2] to-[#fdd7de]">
-      <div className="w-full max-w-3xl bg-white/80 backdrop-blur rounded-xl shadow p-6 space-y-4">
-        <h1 className="text-2xl font-bold">
+    <main className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#ffb5c2] to-[#fdd7de] dark:from-background dark:to-background py-10 px-4">
+      <div className="w-full max-w-3xl bg-white/80 dark:bg-card/80 backdrop-blur rounded-xl shadow p-6 space-y-4 border border-transparent dark:border-border">
+        <h1 className="text-2xl font-bold text-foreground">
           {isSalon ? "Salon settings" : "Account settings"}
         </h1>
 

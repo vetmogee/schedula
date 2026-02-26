@@ -1,6 +1,8 @@
 import { prisma } from "@/lib/prisma";
 import SalonListWithSearch from "@/app/_components/salon/SalonListWithSearch";
 
+export const dynamic = 'force-dynamic';
+
 export default async function SalonsPage() {
   const salons = await prisma.salon.findMany({
     orderBy: {
@@ -15,13 +17,13 @@ export default async function SalonsPage() {
   });
 
   return (
-    <main className="min-h-screen bg-gradient-to-br from-[#ffb5c2] to-[#fdd7de] py-10 px-4">
+    <main className="min-h-screen bg-gradient-to-br from-[#ffb5c2] to-[#fdd7de] dark:from-background dark:to-background py-10 px-4">
       <div className="max-w-6xl mx-auto space-y-8">
         <header className="flex flex-col gap-2">
-          <h1 className="text-3xl md:text-4xl font-bold text-gray-900">
+          <h1 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-foreground">
             Salons
           </h1>
-          <p className="text-gray-700">
+          <p className="text-gray-700 dark:text-muted-foreground">
             Browse all available salons and find the perfect one for you.
           </p>
         </header>

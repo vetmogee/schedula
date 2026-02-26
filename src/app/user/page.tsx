@@ -3,6 +3,8 @@ import { redirect } from "next/navigation";
 import { supabase } from "@/lib/supabase/server";
 import { prisma } from "@/lib/prisma";
 import { format } from "date-fns";
+
+export const dynamic = 'force-dynamic';
 import Link from "next/link";
 
 async function requireCustomerUser() {
@@ -72,10 +74,10 @@ export default async function UserBookingsPage() {
   };
 
   return (
-    <main className="min-h-screen bg-gradient-to-br from-[#ffb5c2] to-[#fdd7de] py-10 px-4">
+    <main className="min-h-screen bg-gradient-to-br from-[#ffb5c2] to-[#fdd7de] dark:from-background dark:to-background py-10 px-4">
       <div className="max-w-4xl mx-auto space-y-6">
         <div className="flex items-center justify-between mb-6">
-          <h1 className="text-3xl md:text-4xl font-bold text-gray-900">
+          <h1 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-foreground">
             My Bookings
           </h1>
           <Link
@@ -89,20 +91,20 @@ export default async function UserBookingsPage() {
         {/* Upcoming Bookings */}
         {upcomingBookings.length > 0 && (
           <div className="space-y-4">
-            <h2 className="text-xl font-semibold text-gray-800">
+            <h2 className="text-xl font-semibold text-gray-800 dark:text-foreground">
               Upcoming ({upcomingBookings.length})
             </h2>
             <div className="space-y-3">
               {upcomingBookings.map((booking) => (
                 <div
                   key={booking.id}
-                  className="rounded-2xl bg-white/80 backdrop-blur shadow-md p-6 border border-white/60 hover:shadow-lg transition-shadow"
+                  className="rounded-2xl bg-white/80 dark:bg-card/80 backdrop-blur shadow-md p-6 border border-white/60 dark:border-border hover:shadow-lg transition-shadow"
                 >
                   <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
                     <div className="flex-1">
                       <div className="flex items-start justify-between mb-3">
                         <div>
-                          <h3 className="text-lg font-semibold text-gray-900 mb-1">
+                          <h3 className="text-lg font-semibold text-gray-900 dark:text-foreground mb-1">
                             <Link
                               href={`/salons/${booking.salon.id}`}
                               className="text-pink-600 hover:text-pink-700 underline"
@@ -111,12 +113,12 @@ export default async function UserBookingsPage() {
                             </Link>
                           </h3>
                         </div>
-                        <span className="px-3 py-1 rounded-full bg-green-100 text-green-800 text-xs font-medium">
+                        <span className="px-3 py-1 rounded-full bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-200 text-xs font-medium">
                           Upcoming
                         </span>
                       </div>
 
-                      <div className="space-y-2 text-sm text-gray-700">
+                      <div className="space-y-2 text-sm text-gray-700 dark:text-muted-foreground">
                         <div className="flex items-center gap-2">
                           <span className="font-medium">Services:</span>
                           <span>{booking.bookingServices.map((bs) => bs.service.name).join(", ")}</span>
@@ -170,20 +172,20 @@ export default async function UserBookingsPage() {
         {/* Past Bookings */}
         {pastBookings.length > 0 && (
           <div className="space-y-4">
-            <h2 className="text-xl font-semibold text-gray-800">
+            <h2 className="text-xl font-semibold text-gray-800 dark:text-foreground">
               Past ({pastBookings.length})
             </h2>
             <div className="space-y-3">
               {pastBookings.map((booking) => (
                 <div
                   key={booking.id}
-                  className="rounded-2xl bg-white/60 backdrop-blur shadow-md p-6 border border-white/40 hover:shadow-lg transition-shadow opacity-90"
+                  className="rounded-2xl bg-white/60 dark:bg-card/60 backdrop-blur shadow-md p-6 border border-white/40 dark:border-border hover:shadow-lg transition-shadow opacity-90"
                 >
                   <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
                     <div className="flex-1">
                       <div className="flex items-start justify-between mb-3">
                         <div>
-                          <h3 className="text-lg font-semibold text-gray-900 mb-1">
+                          <h3 className="text-lg font-semibold text-gray-900 dark:text-foreground mb-1">
                             <Link
                               href={`/salons/${booking.salon.id}`}
                               className="text-pink-600 hover:text-pink-700 underline"
@@ -192,12 +194,12 @@ export default async function UserBookingsPage() {
                             </Link>
                           </h3>
                         </div>
-                        <span className="px-3 py-1 rounded-full bg-gray-100 text-gray-600 text-xs font-medium">
+                        <span className="px-3 py-1 rounded-full bg-gray-100 dark:bg-muted text-gray-600 dark:text-muted-foreground text-xs font-medium">
                           Completed
                         </span>
                       </div>
 
-                      <div className="space-y-2 text-sm text-gray-700">
+                      <div className="space-y-2 text-sm text-gray-700 dark:text-muted-foreground">
                         <div className="flex items-center gap-2">
                           <span className="font-medium">Services:</span>
                           <span>{booking.bookingServices.map((bs) => bs.service.name).join(", ")}</span>
@@ -250,11 +252,11 @@ export default async function UserBookingsPage() {
 
         {/* Empty State */}
         {bookings.length === 0 && (
-          <div className="rounded-2xl bg-white/80 backdrop-blur shadow-md p-12 border border-white/60 text-center">
-            <h2 className="text-xl font-semibold text-gray-800 mb-2">
+          <div className="rounded-2xl bg-white/80 dark:bg-card/80 backdrop-blur shadow-md p-12 border border-white/60 dark:border-border text-center">
+            <h2 className="text-xl font-semibold text-gray-800 dark:text-foreground mb-2">
               No bookings yet
             </h2>
-            <p className="text-gray-600 mb-6">
+            <p className="text-gray-600 dark:text-muted-foreground mb-6">
               Start by browsing salons and making your first reservation!
             </p>
             <Link

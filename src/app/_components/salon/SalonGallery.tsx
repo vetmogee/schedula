@@ -24,14 +24,14 @@ export function SalonGallery({ pictures, salonName }: SalonGalleryProps) {
   }
 
   return (
-    <div className="rounded-2xl bg-white/80 backdrop-blur shadow-md p-6 border border-white/60">
-      <h2 className="text-xl font-semibold text-gray-900 mb-4">Gallery</h2>
+    <div className="rounded-2xl bg-white/80 dark:bg-card/80 backdrop-blur shadow-md p-6 border border-white/60 dark:border-border">
+      <h2 className="text-xl font-semibold text-gray-900 dark:text-foreground mb-4">Gallery</h2>
       <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
         {pictures.map((picture) => {
           return (
             <Dialog key={picture.id}>
               <DialogTrigger asChild>
-                <div className="relative rounded-lg overflow-hidden bg-gray-100 aspect-square cursor-pointer hover:opacity-90 transition-opacity">
+                <div className="relative rounded-lg overflow-hidden bg-gray-100 dark:bg-muted aspect-square cursor-pointer hover:opacity-90 transition-opacity">
                   <img
                     src={picture.dataUrl}
                     alt={`${salonName} - Picture ${picture.id}`}

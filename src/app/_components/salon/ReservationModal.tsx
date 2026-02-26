@@ -145,7 +145,7 @@ export function ReservationModal({
         <div className="flex-1 flex flex-col overflow-hidden">
           <div className="px-6 pt-6 pb-4">
             <SheetHeader>
-              <SheetTitle className="text-2xl font-bold text-gray-900">
+              <SheetTitle className="text-2xl font-bold text-gray-900 dark:text-foreground">
                 Create Reservation
               </SheetTitle>
               <SheetDescription>
@@ -156,7 +156,7 @@ export function ReservationModal({
 
           <div className="flex-1 overflow-y-auto px-5 space-y-6 pb-4">
             {/* Employee Selection */}
-            <div className="rounded-2xl bg-white/80 backdrop-blur shadow-md p-6 border border-white/60">
+            <div className="rounded-2xl bg-white/80 dark:bg-card/80 backdrop-blur shadow-md p-6 border border-white/60 dark:border-border">
               <EmployeeSelection
                 employees={employees}
                 selectedEmployeeId={selectedEmployeeId}
@@ -165,7 +165,7 @@ export function ReservationModal({
             </div>
 
             {/* Date & Time Selection */}
-            <div className="rounded-2xl bg-white/80 backdrop-blur shadow-md p-6 border border-white/60">
+            <div className="rounded-2xl bg-white/80 dark:bg-card/80 backdrop-blur shadow-md p-6 border border-white/60 dark:border-border">
               <DateTimeSelection
                 selectedDate={selectedDate}
                 selectedTime={selectedTime}
@@ -190,15 +190,15 @@ export function ReservationModal({
 
           {/* Fixed Bottom Section - Selected Services and Totals */}
           {selectedServices.length > 0 && (
-            <div className="sticky bottom-0 bg-white/95 backdrop-blur border-t border-gray-200 shadow-lg z-10 px-5 py-4">
+            <div className="sticky bottom-0 bg-white/95 dark:bg-card/95 backdrop-blur border-t border-gray-200 dark:border-border shadow-lg z-10 px-5 py-4">
               <div className="flex items-center justify-between mb-3">
-                <h3 className="text-sm font-semibold text-gray-700">
+                <h3 className="text-sm font-semibold text-gray-700 dark:text-muted-foreground">
                   Selected Services ({selectedServices.length})
                 </h3>
-                <div className="flex items-center gap-4 text-sm text-gray-600">
+                <div className="flex items-center gap-4 text-sm text-gray-600 dark:text-muted-foreground">
                   {selectedEmployeeId && employees.find((e) => e.id === selectedEmployeeId) && (
                     <span>
-                      Employee: <span className="font-medium text-gray-900">
+                      Employee: <span className="font-medium text-gray-900 dark:text-foreground">
                         {employees.find((e) => e.id === selectedEmployeeId)?.name}
                       </span>
                     </span>
@@ -214,35 +214,35 @@ export function ReservationModal({
                 {selectedServices.map((service) => (
                   <div
                     key={service.id}
-                    className="flex items-center justify-between p-2 rounded-lg bg-pink-50/60 border border-pink-100"
+                    className="flex items-center justify-between p-2 rounded-lg bg-pink-50/60 dark:bg-accent/20 border border-pink-100 dark:border-border"
                   >
                     <div className="flex-1">
-                      <p className="text-sm font-medium text-gray-900">{service.name}</p>
-                      <p className="text-xs text-gray-600">
+                      <p className="text-sm font-medium text-gray-900 dark:text-foreground">{service.name}</p>
+                      <p className="text-xs text-gray-600 dark:text-muted-foreground">
                         {formatDuration(service.duration)} · {currency || "USD"}{" "}
                         {service.price.toFixed(2)}
                       </p>
                     </div>
                     <button
                       onClick={() => removeService(service.id)}
-                      className="ml-2 p-1 hover:bg-pink-200 rounded transition-colors"
+                      className="ml-2 p-1 hover:bg-pink-200 dark:hover:bg-accent/50 rounded transition-colors"
                       aria-label="Remove service"
                     >
-                      <X className="h-4 w-4 text-gray-600" />
+                      <X className="h-4 w-4 text-gray-600 dark:text-muted-foreground" />
                     </button>
                   </div>
                 ))}
               </div>
-              <div className="pt-3 border-t border-pink-200 mb-3">
+              <div className="pt-3 border-t border-pink-200 dark:border-border mb-3">
                 <div className="flex justify-between text-sm mb-1">
-                  <span className="text-gray-600">Total Duration:</span>
-                  <span className="font-medium text-gray-900">
+                  <span className="text-gray-600 dark:text-muted-foreground">Total Duration:</span>
+                  <span className="font-medium text-gray-900 dark:text-foreground">
                     {formatTotalDuration(totalDuration)}
                   </span>
                 </div>
                 <div className="flex justify-between text-sm">
-                  <span className="text-gray-600">Total Price:</span>
-                  <span className="font-semibold text-gray-900">
+                  <span className="text-gray-600 dark:text-muted-foreground">Total Price:</span>
+                  <span className="font-semibold text-gray-900 dark:text-foreground">
                     {currency || "USD"} {totalPrice.toFixed(2)}
                   </span>
                 </div>

@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import Navbar from "./_components/navbar/navbar";
 import Footer from "./_components/footer/footer";
+import { ThemeProvider } from "./_components/theme-provider";
 import { Toaster } from "./_components/ui/sonner";
 import { cookies } from "next/headers";
 import { supabase } from "@/lib/supabase/server";
@@ -58,14 +59,21 @@ export default async function RootLayout({
   }
 
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <Navbar currentUser={currentUser} />
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+        >
+          <Navbar currentUser={currentUser} />
           {children}
-        <Footer />
-        <Toaster />
+          <Footer />
+          <Toaster />
+        </ThemeProvider>
       </body>
     </html>
   );

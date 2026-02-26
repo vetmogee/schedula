@@ -27,8 +27,8 @@ export default function ResetPasswordPage() {
   }
 
   return (
-    <div className="mx-auto h-screen py-20 bg-gradient-to-br from-[#ffb5c2] to-[#fdd7de] w-full flex justify-center items-center">
-      <div className="max-w-md bg-white bg-opacity-70 backdrop-blur-md rounded-lg p-8 shadow-md w-full">
+    <div className="mx-auto h-screen py-20 bg-gradient-to-br from-[#ffb5c2] to-[#fdd7de] dark:from-background dark:to-background w-full flex justify-center items-center">
+      <div className="max-w-md bg-white dark:bg-card bg-opacity-70 dark:bg-opacity-100 backdrop-blur-md rounded-lg p-8 shadow-md w-full border border-transparent dark:border-border">
         <h1 className="text-2xl font-semibold mb-6">Reset Password</h1>
 
         {success ? (

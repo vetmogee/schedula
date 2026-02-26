@@ -49,7 +49,7 @@ export function DateNavigation({ selectedDate, onDateChange }: Props) {
         variant="outline"
         size="icon"
         onClick={goToPreviousDay}
-        className="h-9 w-9 border-gray-300 hover:bg-pink-50 hover:border-pink-300"
+        className="h-9 w-9 border-gray-300 dark:border-border hover:bg-pink-50 dark:hover:bg-accent hover:border-pink-300 dark:hover:border-primary"
       >
         <ChevronLeft className="h-4 w-4" />
       </Button>
@@ -59,7 +59,7 @@ export function DateNavigation({ selectedDate, onDateChange }: Props) {
         <Button
           variant="outline"
           onClick={() => setIsCalendarOpen(!isCalendarOpen)}
-          className="h-9 px-4 border-gray-300 hover:bg-pink-50 hover:border-pink-300 flex items-center gap-2"
+          className="h-9 px-4 border-gray-300 dark:border-border hover:bg-pink-50 dark:hover:bg-accent hover:border-pink-300 dark:hover:border-primary flex items-center gap-2"
         >
           <CalendarIcon className="h-4 w-4" />
           <span className="text-sm font-medium">{formatDateDisplay(selectedDate)}</span>
@@ -72,19 +72,19 @@ export function DateNavigation({ selectedDate, onDateChange }: Props) {
               className="fixed inset-0 z-40"
               onClick={() => setIsCalendarOpen(false)}
             />
-            <div className="absolute top-full left-0 mt-2 z-50 bg-white rounded-lg shadow-lg border border-gray-200 p-3">
+            <div className="absolute top-full left-0 mt-2 z-50 bg-white dark:bg-card rounded-lg shadow-lg border border-gray-200 dark:border-border p-3">
               <Calendar
                 mode="single"
                 selected={selectedDate}
                 onSelect={handleDateSelect}
                 className="rounded-md"
               />
-              <div className="mt-2 pt-2 border-t border-gray-200">
+              <div className="mt-2 pt-2 border-t border-gray-200 dark:border-gray-600">
                 <Button
                   variant="ghost"
                   size="sm"
                   onClick={goToToday}
-                  className="w-full text-sm"
+                  className="w-full text-sm text-foreground dark:hover:bg-accent"
                 >
                   Go to Today
                 </Button>
@@ -99,7 +99,7 @@ export function DateNavigation({ selectedDate, onDateChange }: Props) {
         variant="outline"
         size="icon"
         onClick={goToNextDay}
-        className="h-9 w-9 border-gray-300 hover:bg-pink-50 hover:border-pink-300"
+        className="h-9 w-9 border-gray-300 dark:border-border hover:bg-pink-50 dark:hover:bg-accent hover:border-pink-300 dark:hover:border-primary"
       >
         <ChevronRight className="h-4 w-4" />
       </Button>

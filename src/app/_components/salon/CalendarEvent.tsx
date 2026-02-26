@@ -9,6 +9,7 @@ type Booking = {
   services: {
     name: string;
     duration: Date;
+    price?: number; // optional for type flexibility; parent supplies it for modal
   }[];
   employee: {
     id: number;

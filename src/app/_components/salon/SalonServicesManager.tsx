@@ -74,12 +74,12 @@ export function SalonServicesManager({
 
   return (
     <section className="space-y-6">
-      <div className="flex flex-wrap items-center justify-between gap-4 rounded-2xl bg-white/80 backdrop-blur px-5 py-4 border border-white/60 shadow-sm">
+      <div className="flex flex-wrap items-center justify-between gap-4 rounded-2xl bg-white/80 dark:bg-card/80 backdrop-blur shadow-md px-5 py-4 border border-white/60 dark:border-border">
         <div className="space-y-1">
-          <h2 className="text-lg font-semibold text-gray-900">
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-foreground">
             Service setup
           </h2>
-          <p className="text-sm text-gray-600">
+          <p className="text-sm text-gray-600 dark:text-muted-foreground">
             Start by creating a service category, then add services under it.
           </p>
         </div>
@@ -103,20 +103,20 @@ export function SalonServicesManager({
 
       <div className="grid gap-4 md:grid-cols-2">
         {categories.length === 0 ? (
-          <div className="col-span-full rounded-2xl border border-dashed border-pink-200 bg-pink-50/60 px-4 py-6 text-center text-sm text-pink-700">
+          <div className="col-span-full rounded-2xl border border-dashed border-pink-200 dark:border-border bg-pink-50/60 dark:bg-accent/20 px-4 py-6 text-center text-sm text-pink-700 dark:text-muted-foreground">
             You don&apos;t have any service categories yet. Click{" "}
-            <span className="font-semibold">New category</span> to create your
+            <span className="font-semibold dark:text-foreground">New category</span> to create your
             first one.
           </div>
         ) : (
           categories.map((category) => (
             <div
               key={category.id}
-              className="rounded-2xl bg-white/80 backdrop-blur border border-white/60 shadow-sm p-4 space-y-3"
+              className="rounded-2xl bg-white/80 dark:bg-card/80 backdrop-blur shadow-md border border-white/60 dark:border-border p-4 space-y-3"
             >
               <div className="flex items-center justify-between gap-2">
                 <div className="flex items-center gap-2">
-                  <h3 className="text-base font-semibold text-gray-900">
+                  <h3 className="text-base font-semibold text-gray-900 dark:text-foreground">
                     {category.name}
                   </h3>
                   <div className="flex items-center gap-1">
@@ -154,14 +154,14 @@ export function SalonServicesManager({
                     </form>
                   </div>
                 </div>
-                <span className="text-xs rounded-full bg-pink-100 text-pink-700 px-2 py-0.5">
+                <span className="text-xs rounded-full bg-pink-100 dark:bg-primary/20 text-pink-700 dark:text-primary px-2 py-0.5">
                   {category.services.length}{" "}
                   {category.services.length === 1 ? "service" : "services"}
                 </span>
               </div>
 
               {category.services.length === 0 ? (
-                <p className="text-xs text-gray-500">
+                <p className="text-xs text-gray-500 dark:text-muted-foreground">
                   No services yet in this category.
                 </p>
               ) : (
@@ -169,7 +169,7 @@ export function SalonServicesManager({
                   {category.services.map((service) => (
                     <li
                       key={service.id}
-                      className="flex items-center justify-between text-sm gap-2 rounded-md border border-transparent hover:border-pink-200 bg-white/70"
+                      className="flex items-center justify-between text-sm gap-2 rounded-md border border-transparent hover:border-pink-200 dark:hover:border-border bg-white/70 dark:bg-accent/30"
                       draggable
                       onDragStart={() =>
                         setDragging({
@@ -220,15 +220,15 @@ export function SalonServicesManager({
                       onDragEnd={() => setDragging(null)}
                     >
                       <div className="flex flex-col">
-                        <span className="font-medium text-gray-900">
+                        <span className="font-medium text-gray-900 dark:text-foreground">
                           {service.name}
                         </span>
-                        <span className="text-xs text-gray-500">
+                        <span className="text-xs text-gray-500 dark:text-muted-foreground">
                           {service.duration}
                         </span>
                       </div>
                       <div className="flex items-center gap-2">
-                        <span className="font-semibold text-pink-700">
+                        <span className="font-semibold text-pink-700 dark:text-primary">
                           {currency} {service.price.toFixed(2)}
                         </span>
                         <div className="flex items-center gap-1">

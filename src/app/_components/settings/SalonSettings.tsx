@@ -137,17 +137,17 @@ export function SalonSettings({
   return (
     <section className="space-y-6">
       <header className="space-y-1">
-        <h2 className="text-xl font-semibold text-gray-900">
+        <h2 className="text-xl font-semibold text-gray-900 dark:text-foreground">
           Salon settings
         </h2>
-        <p className="text-sm text-gray-600">
+        <p className="text-sm text-gray-600 dark:text-muted-foreground">
           Manage your salon details, opening hours, services, and staff.
         </p>
       </header>
 
       <form
         action={updateSalonSettings}
-        className="space-y-6 rounded-xl border border-pink-100 bg-pink-50/60 p-4"
+        className="space-y-6 rounded-xl border border-pink-100 dark:border-border bg-pink-50/60 dark:bg-accent/20 p-4"
       >
         <div className="grid gap-4">
           <div className="space-y-1.5">
@@ -268,13 +268,13 @@ export function SalonSettings({
 
       <section className="mt-8 space-y-4">
         <header className="space-y-1">
-          <h3 className="text-lg font-semibold text-gray-900">Salon Pictures</h3>
-          <p className="text-sm text-gray-600">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-foreground">Salon Pictures</h3>
+          <p className="text-sm text-gray-600 dark:text-muted-foreground">
             Add pictures of your salon to showcase your space to customers.
           </p>
         </header>
 
-        <div className="rounded-xl border border-pink-100 bg-pink-50/60 p-4 space-y-4">
+        <div className="rounded-xl border border-pink-100 dark:border-border bg-pink-50/60 dark:bg-accent/20 p-4 space-y-4">
           <form
             ref={pictureFormRef}
             action={formAction}
@@ -292,7 +292,7 @@ export function SalonSettings({
                 required
                 disabled={isPending}
               />
-              <p className="text-xs text-gray-500">
+              <p className="text-xs text-gray-500 dark:text-muted-foreground">
                 Accepted formats: JPEG, PNG, WebP, GIF (max 5MB)
               </p>
               {(error || validationError) && (
@@ -307,11 +307,11 @@ export function SalonSettings({
           </form>
 
           <div className="space-y-2">
-            <Label className="text-xs uppercase tracking-wide text-gray-500">
+            <Label className="text-xs uppercase tracking-wide text-gray-500 dark:text-muted-foreground">
               Current Pictures
             </Label>
             {pictures.length === 0 ? (
-              <p className="text-sm text-gray-600">
+              <p className="text-sm text-gray-600 dark:text-muted-foreground">
                 You haven&apos;t added any pictures yet.
               </p>
             ) : (
@@ -319,7 +319,7 @@ export function SalonSettings({
                 {pictures.map((picture) => (
                   <div
                     key={picture.id}
-                    className="relative group rounded-lg overflow-hidden bg-white/80 border border-white/60"
+                    className="relative group rounded-lg overflow-hidden bg-white/80 dark:bg-card/80 border border-white/60 dark:border-border"
                   >
                     <img
                       src={picture.dataUrl}
@@ -360,7 +360,7 @@ export function SalonSettings({
           </p>
         </header>
 
-        <div className="rounded-xl border border-pink-100 bg-pink-50/60 p-4 space-y-4">
+        <div className="rounded-xl border border-pink-100 dark:border-border bg-pink-50/60 dark:bg-accent/20 p-4 space-y-4">
           <form
             action={createEmployee}
             className="flex flex-col gap-3 sm:flex-row sm:items-center"
@@ -382,11 +382,11 @@ export function SalonSettings({
           </form>
 
           <div className="space-y-2">
-            <Label className="text-xs uppercase tracking-wide text-gray-500">
+            <Label className="text-xs uppercase tracking-wide text-gray-500 dark:text-muted-foreground">
               Current employees
             </Label>
             {employees.length === 0 ? (
-              <p className="text-sm text-gray-600">
+              <p className="text-sm text-gray-600 dark:text-muted-foreground">
                 You haven&apos;t added any employees yet.
               </p>
             ) : (
@@ -394,12 +394,12 @@ export function SalonSettings({
                 {employees.map((employee) => (
                   <li
                     key={employee.id}
-                    className="flex items-center justify-between rounded-md bg-white/80 px-3 py-2 text-sm"
+                    className="flex items-center justify-between rounded-md bg-white/80 dark:bg-card/80 px-3 py-2 text-sm"
                   >
-                    <span className="font-medium text-gray-900">
+                    <span className="font-medium text-gray-900 dark:text-foreground">
                       {employee.name}
                     </span>
-                    <span className="text-xs text-gray-400">
+                    <span className="text-xs text-gray-400 dark:text-muted-foreground">
                       ID: {employee.id}
                     </span>
                   </li>

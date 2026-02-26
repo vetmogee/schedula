@@ -55,7 +55,7 @@ export default async function Home() {
   const salons = salonsResult?.ok ? salonsResult.salons : [];
 
   return (
-    <div className="bg-gradient-to-br from-[#ffb5c2] to-[#fdd7de] min-h-screen">
+    <div className="bg-gradient-to-br from-[#ffb5c2] to-[#fdd7de] dark:from-background dark:to-background min-h-screen">
       <div className="max-w-6xl mx-auto px-4 py-10">
         {/* Show about section only when customer is NOT logged in */}
         {!customer && <AboutUs />}

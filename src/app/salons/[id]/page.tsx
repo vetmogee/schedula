@@ -2,6 +2,8 @@ import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import Link from "next/link";
 import { CalendarUser } from "@/app/_components/salon/CalendarUser";
+
+export const dynamic = 'force-dynamic';
 import { ReservationButton } from "@/app/_components/salon/ReservationButton";
 import { SalonGallery } from "@/app/_components/salon/SalonGallery";
 import { Button } from "@/app/_components/ui/button";
@@ -152,7 +154,7 @@ export default async function SalonDetailPage({ params }: SalonDetailPageProps) 
     : null;
 
   return (
-    <main className="min-h-screen bg-gradient-to-br from-[#ffb5c2] to-[#fdd7de] pb-10">
+    <main className="min-h-screen bg-gradient-to-br from-[#ffb5c2] to-[#fdd7de] dark:from-background dark:to-background py-10 px-4">
       {/* Google Maps Embed - Full Width */}
       {embedMapUrl && (
         <div className="w-full mb-6">
@@ -182,22 +184,22 @@ export default async function SalonDetailPage({ params }: SalonDetailPageProps) 
           </div>
         )}
 
-        <div className="rounded-2xl bg-white/80 backdrop-blur shadow-md p-6 border border-white/60">
-          <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+        <div className="rounded-2xl bg-white/80 dark:bg-card/80 backdrop-blur shadow-md p-6 border border-white/60 dark:border-border">
+          <h1 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-foreground mb-4">
             {salon.name}
           </h1>
 
           {salon.description && (
-            <p className="text-gray-700 mb-6">{salon.description}</p>
+            <p className="text-gray-700 dark:text-muted-foreground mb-6">{salon.description}</p>
           )}
 
           <div className="grid gap-4 md:grid-cols-2 mb-6">
             {(salon.address || salon.city || salon.postalCode) && (
               <div>
-                <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-2">
+                <h3 className="text-sm font-semibold text-gray-500 dark:text-muted-foreground uppercase tracking-wide mb-2">
                   Location
                 </h3>
-                <p className="text-gray-900">
+                <p className="text-gray-900 dark:text-foreground">
                   {salon.address && <span>{salon.address}</span>}
                   {salon.address && (salon.city || salon.postalCode) && <span>, </span>}
                   {salon.postalCode && <span>{salon.postalCode} </span>}
@@ -208,19 +210,19 @@ export default async function SalonDetailPage({ params }: SalonDetailPageProps) 
 
             {salon.phone && (
               <div>
-                <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-2">
+                <h3 className="text-sm font-semibold text-gray-500 dark:text-muted-foreground uppercase tracking-wide mb-2">
                   Phone
                 </h3>
-                <p className="text-gray-900">{salon.phone.toString()}</p>
+                <p className="text-gray-900 dark:text-foreground">{salon.phone.toString()}</p>
               </div>
             )}
 
             {(openingTime || closingTime) && (
               <div>
-                <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-2">
+                <h3 className="text-sm font-semibold text-gray-500 dark:text-muted-foreground uppercase tracking-wide mb-2">
                   Hours
                 </h3>
-                <p className="text-gray-900">
+                <p className="text-gray-900 dark:text-foreground">
                   {openingTime && closingTime
                     ? `${openingTime} - ${closingTime}`
                     : openingTime || closingTime || "Not specified"}
@@ -230,10 +232,10 @@ export default async function SalonDetailPage({ params }: SalonDetailPageProps) 
 
             {salon.currency && (
               <div>
-                <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-2">
+                <h3 className="text-sm font-semibold text-gray-500 dark:text-muted-foreground uppercase tracking-wide mb-2">
                   Currency
                 </h3>
-                <p className="text-gray-900">{salon.currency}</p>
+                <p className="text-gray-900 dark:text-foreground">{salon.currency}</p>
               </div>
             )}
           </div>
@@ -264,8 +266,8 @@ export default async function SalonDetailPage({ params }: SalonDetailPageProps) 
         />
 
         {salon.services.length === 0 && salon.employees.length === 0 && (
-          <div className="rounded-2xl bg-white/80 backdrop-blur shadow-md p-6 border border-white/60 text-center">
-            <p className="text-gray-600">
+          <div className="rounded-2xl bg-white/80 dark:bg-card/80 backdrop-blur shadow-md p-6 border border-white/60 dark:border-border text-center">
+            <p className="text-gray-600 dark:text-muted-foreground">
               This salon hasn&apos;t added any services or employees yet.
             </p>
           </div>
@@ -279,6 +281,7 @@ export default async function SalonDetailPage({ params }: SalonDetailPageProps) 
               <CalendarUser
                 openingTime={openingTimeForCalendar}
                 closingTime={closingTimeForCalendar}
+                currency={salon.currency}
                 employees={salon.employees.map((e) => ({
                   id: e.id,
                   name: e.name,
@@ -289,6 +292,7 @@ export default async function SalonDetailPage({ params }: SalonDetailPageProps) 
                   services: b.bookingServices.map((bs) => ({
                     name: bs.service.name,
                     duration: bs.service.duration,
+                    price: bs.service.price,
                   })),
                   employee: b.employee
                     ? {
@@ -303,8 +307,8 @@ export default async function SalonDetailPage({ params }: SalonDetailPageProps) 
               />
             </div>
           ) : (
-            <div className="rounded-2xl bg-white/80 backdrop-blur shadow-md p-6 border border-white/60">
-              <p className="text-gray-600">No employees available.</p>
+            <div className="rounded-2xl bg-white/80 dark:bg-card/80 backdrop-blur shadow-md p-6 border border-white/60 dark:border-border">
+              <p className="text-gray-600 dark:text-muted-foreground">No employees available.</p>
             </div>
           )}
 
@@ -335,7 +339,7 @@ export default async function SalonDetailPage({ params }: SalonDetailPageProps) 
               ) : (
                 <Button
                   asChild
-                  className="w-full bg-black hover:bg-gray-700 text-white font-semibold py-6 text-lg"
+                  className="w-full bg-black hover:bg-gray-700 dark:bg-primary dark:hover:bg-primary/90 text-white font-semibold py-6 text-lg"
                 >
                   <Link href="/login">
                     Log in to create reservation

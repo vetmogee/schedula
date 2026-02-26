@@ -91,7 +91,7 @@ export default function UpcomingBookingBanner({ booking }: { booking: Booking })
           </Link>
           <Link
             href="/user"
-            className="px-4 py-2 bg-white text-pink-600 hover:bg-gray-100 rounded-lg font-medium transition-colors"
+            className="px-4 py-2 bg-white dark:bg-card text-pink-600 hover:bg-gray-100 dark:hover:bg-accent rounded-lg font-medium transition-colors"
           >
             View All Bookings
           </Link>

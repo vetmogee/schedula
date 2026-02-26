@@ -184,13 +184,8 @@ export async function resetPasswordAction(formData: FormData) {
   const { email } = parsed.data
 
   // Send password reset email via Supabase - always use production URL when deployed
-  const baseUrl =
-    process.env.NODE_ENV === "production"
-      ? "https://schedula-murex.vercel.app"
-      : process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"
-
   const { error } = await supabase.auth.resetPasswordForEmail(email, {
-    redirectTo: `${baseUrl}/reset-password/confirm`,
+    redirectTo: `https://schedula-murex.vercel.app/reset-password/confirm`,
   })
 
   if (error) {

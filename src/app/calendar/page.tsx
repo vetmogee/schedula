@@ -5,6 +5,8 @@ import { prisma } from "@/lib/prisma";
 import { supabase } from "@/lib/supabase/server";
 import { CalendarSalon } from "../_components/salon/CalendarSalon";
 
+export const dynamic = 'force-dynamic';
+
 async function requireSalonUser() {
   const cookieStore = await cookies();
   const token = cookieStore.get("auth-token")?.value;
@@ -89,6 +91,7 @@ export default async function SalonCalendarPage() {
     services: booking.bookingServices.map((bs) => ({
       name: bs.service.name,
       duration: bs.service.duration,
+      price: bs.service.price,
     })),
     employee: booking.employee
       ? {
@@ -102,13 +105,13 @@ export default async function SalonCalendarPage() {
   }));
 
   return (
-    <main className="min-h-screen bg-gradient-to-br from-[#ffb5c2] to-[#fdd7de] py-10 px-4">
+    <main className="min-h-screen bg-gradient-to-br from-[#ffb5c2] to-[#fdd7de] dark:from-background dark:to-background py-10 px-4">
       <div className="max-w-6xl mx-auto space-y-8">
         <header className="space-y-2">
-          <h1 className="text-3xl md:text-4xl font-bold text-gray-900">
+          <h1 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-foreground">
             Salon calendar
           </h1>
-          <p className="text-gray-700 text-sm md:text-base">
+          <p className="text-gray-700 dark:text-muted-foreground text-sm md:text-base">
             View your team&apos;s availability for today in a column-based calendar,
             with 30-minute time slots from opening to closing hours.
           </p>
@@ -119,6 +122,7 @@ export default async function SalonCalendarPage() {
           closingTime={closingTime}
           employees={employees}
           bookings={bookings}
+          currency={salon.currency}
         />
       </div>
     </main>

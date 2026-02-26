@@ -3,6 +3,8 @@ import { redirect } from "next/navigation";
 import { supabase } from "@/lib/supabase/server";
 import { prisma } from "@/lib/prisma";
 
+export const dynamic = 'force-dynamic';
+
 export default async function DashboardPage() {
   const cookieStore = await cookies();
   const token = cookieStore.get("auth-token")?.value;
@@ -128,37 +130,37 @@ export default async function DashboardPage() {
     ]);
 
   return (
-    <main className="min-h-screen bg-gradient-to-br from-[#ffb5c2] to-[#fdd7de] py-10 px-4">
+    <main className="min-h-screen bg-gradient-to-br from-[#ffb5c2] to-[#fdd7de] dark:from-background dark:to-background py-10 px-4">
       <div className="max-w-5xl mx-auto space-y-8">
         <header className="flex flex-col gap-2">
-          <h1 className="text-3xl md:text-4xl font-bold text-gray-900">
+          <h1 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-foreground">
             Salon Dashboard
           </h1>
-          <p className="text-gray-700">
+          <p className="text-gray-700 dark:text-muted-foreground">
             Welcome back{dbUser.name ? `, ${dbUser.name}` : ""}. Manage your
             bookings, availability, and salon details from here.
           </p>
         </header>
 
         <section className="grid gap-6 md:grid-cols-3">
-          <div className="rounded-2xl bg-white/80 backdrop-blur shadow-md p-5 border border-white/60">
-            <p className="text-xs font-semibold uppercase tracking-wide text-pink-500">
+          <div className="rounded-2xl bg-white/80 dark:bg-card/80 backdrop-blur shadow-md p-5 border border-white/60 dark:border-border">
+            <p className="text-xs font-semibold uppercase tracking-wide text-pink-500 dark:text-primary">
               Today&apos;s Bookings
             </p>
-            <p className="mt-3 text-3xl font-bold text-gray-900">{todayCount}</p>
-            <p className="mt-1 text-xs text-gray-500">
+            <p className="mt-3 text-3xl font-bold text-gray-900 dark:text-foreground">{todayCount}</p>
+            <p className="mt-1 text-xs text-gray-500 dark:text-muted-foreground">
               {todayCount === 0
                 ? "You don't have any bookings for today yet."
                 : "Great work – here are your appointments for today."}
             </p>
           </div>
 
-          <div className="rounded-2xl bg-white/80 backdrop-blur shadow-md p-5 border border-white/60">
-            <p className="text-xs font-semibold uppercase tracking-wide text-pink-500">
+          <div className="rounded-2xl bg-white/80 dark:bg-card/80 backdrop-blur shadow-md p-5 border border-white/60 dark:border-border">
+            <p className="text-xs font-semibold uppercase tracking-wide text-pink-500 dark:text-primary">
               Upcoming Week
             </p>
-            <p className="mt-3 text-3xl font-bold text-gray-900">{weekCount}</p>
-            <p className="mt-1 text-xs text-gray-500">
+            <p className="mt-3 text-3xl font-bold text-gray-900 dark:text-foreground">{weekCount}</p>
+            <p className="mt-1 text-xs text-gray-500 dark:text-muted-foreground">
               {weekCount === 0
                 ? "Once customers start booking, you'll see upcoming appointments here."
                 : "You have clients booked in the next 7 days."}
@@ -169,18 +171,18 @@ export default async function DashboardPage() {
         </section>
 
         <section className="grid gap-4 sm:gap-6 lg:grid-cols-[2fr,1.5fr]">
-          <div className="rounded-2xl bg-white/80 backdrop-blur shadow-md p-4 sm:p-6 border border-white/60">
-            <h2 className="text-base sm:text-lg font-semibold text-gray-900">
+          <div className="rounded-2xl bg-white/80 dark:bg-card/80 backdrop-blur shadow-md p-4 sm:p-6 border border-white/60 dark:border-border">
+            <h2 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-foreground">
               Upcoming appointments
             </h2>
             {upcomingBookings.length === 0 ? (
               <>
-                <p className="mt-2 text-xs sm:text-sm text-gray-600">
+                <p className="mt-2 text-xs sm:text-sm text-gray-600 dark:text-muted-foreground">
                   You don&apos;t have any upcoming appointments yet. When
                   customers book with your salon, they&apos;ll appear in this
                   list.
                 </p>
-                <div className="mt-4 rounded-xl border border-dashed border-pink-200 bg-pink-50/60 px-3 sm:px-4 py-4 sm:py-6 text-center text-xs sm:text-sm text-pink-700">
+                <div className="mt-4 rounded-xl border border-dashed border-pink-200 dark:border-border bg-pink-50/60 dark:bg-accent/20 px-3 sm:px-4 py-4 sm:py-6 text-center text-xs sm:text-sm text-pink-700 dark:text-muted-foreground">
                   Appointment management will appear here once booking is
                   enabled.
                 </div>
@@ -201,15 +203,15 @@ export default async function DashboardPage() {
 
                   return (
                     <li key={booking.id} className="py-2 sm:py-3 flex flex-col gap-1">
-                      <div className="flex items-center gap-2 text-xs sm:text-sm font-semibold text-pink-600">
+                      <div className="flex items-center gap-2 text-xs sm:text-sm font-semibold text-pink-600 dark:text-primary">
                         <span>{dateLabel}</span>
-                        <span className="text-gray-400">·</span>
-                        <span className="text-gray-500 font-normal">{timeLabel}</span>
+                        <span className="text-gray-400 dark:text-muted-foreground">·</span>
+                        <span className="text-gray-500 dark:text-muted-foreground font-normal">{timeLabel}</span>
                       </div>
-                      <p className="text-xs sm:text-sm text-gray-700">
+                      <p className="text-xs sm:text-sm text-gray-700 dark:text-muted-foreground">
                         {booking.employee?.name ?? "Unassigned"}
                       </p>
-                      <p className="text-xs sm:text-sm text-gray-900">
+                      <p className="text-xs sm:text-sm text-gray-900 dark:text-foreground">
                         <span>{booking.bookingServices.map((bs) => bs.service.name).join(", ")}</span>
                         {" · "}
                         <span className="font-medium">{booking.customer.name ?? "Customer"}</span>
@@ -223,19 +225,19 @@ export default async function DashboardPage() {
 
         </section>
 
-        <section className="rounded-2xl bg-white/80 backdrop-blur shadow-md p-6 border border-white/60">
-          <h2 className="text-lg font-semibold text-gray-900">
+        <section className="rounded-2xl bg-white/80 dark:bg-card/80 backdrop-blur shadow-md p-6 border border-white/60 dark:border-border">
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-foreground">
             Booking history
           </h2>
           {recentBookings.length === 0 ? (
-            <p className="mt-2 text-sm text-gray-600">
+            <p className="mt-2 text-sm text-gray-600 dark:text-muted-foreground">
               You don&apos;t have any past bookings yet. Once clients start
               visiting your salon, you&apos;ll see their history here.
             </p>
           ) : (
             <div className="mt-4 overflow-x-auto">
               <table className="min-w-full text-sm">
-                <thead className="text-xs uppercase text-gray-500 border-b border-pink-100">
+                <thead className="text-xs uppercase text-gray-500 dark:text-muted-foreground border-b border-pink-100 dark:border-border">
                   <tr>
                     <th className="py-2 pr-4 text-left">Date</th>
                     <th className="py-2 pr-4 text-left">Customer</th>
@@ -258,19 +260,19 @@ export default async function DashboardPage() {
 
                     return (
                       <tr key={booking.id}>
-                        <td className="py-2 pr-4 whitespace-nowrap text-gray-800">
+                        <td className="py-2 pr-4 whitespace-nowrap text-gray-800 dark:text-foreground">
                           <div>{dateLabel}</div>
-                          <div className="text-xs text-gray-500">
+                          <div className="text-xs text-gray-500 dark:text-muted-foreground">
                             {timeLabel}
                           </div>
                         </td>
-                        <td className="py-2 pr-4 whitespace-nowrap text-gray-800">
+                        <td className="py-2 pr-4 whitespace-nowrap text-gray-800 dark:text-foreground">
                           {booking.customer.name ?? "Customer"}
                         </td>
-                        <td className="py-2 pr-4 whitespace-nowrap text-gray-800">
+                        <td className="py-2 pr-4 whitespace-nowrap text-gray-800 dark:text-foreground">
                           {booking.bookingServices.map((bs) => bs.service.name).join(", ")}
                         </td>
-                        <td className="py-2 pr-4 whitespace-nowrap text-gray-800">
+                        <td className="py-2 pr-4 whitespace-nowrap text-gray-800 dark:text-foreground">
                           {booking.employee?.name ?? "Unassigned"}
                         </td>
                       </tr>

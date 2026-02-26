@@ -50,12 +50,12 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="mx-auto h-screen py-20 bg-gradient-to-br from-[#ffb5c2] to-[#fdd7de] w-full flex justify-center items-center">
-      <div className="max-w-md bg-white bg-opacity-70 backdrop-blur-md rounded-lg p-8 shadow-md w-full">
-        <h1 className="text-2xl font-semibold mb-6">Log in</h1>
+    <div className="mx-auto h-screen py-20 bg-gradient-to-br from-[#ffb5c2] to-[#fdd7de] dark:from-background dark:to-background w-full flex justify-center items-center">
+      <div className="max-w-md bg-white dark:bg-card bg-opacity-70 dark:bg-opacity-100 backdrop-blur-md rounded-lg p-8 shadow-md w-full border border-transparent dark:border-border">
+        <h1 className="text-2xl font-semibold mb-6 text-foreground">Log in</h1>
 
         {loggedOut && (
-          <div className="mb-4 rounded-md bg-green-100 border border-green-300 text-green-800 px-4 py-2 text-sm">
+          <div className="mb-4 rounded-md bg-green-100 dark:bg-green-900/30 border border-green-300 dark:border-green-700 text-green-800 dark:text-green-200 px-4 py-2 text-sm">
             Successfully logged out.
           </div>
         )}

@@ -17,6 +17,7 @@ type Booking = {
   services: {
     name: string;
     duration: Date;
+    price?: number;
   }[];
   employee: {
     id: number;
@@ -32,6 +33,7 @@ type Props = {
   closingTime: string | null;
   employees: Employee[];
   bookings?: Booking[];
+  currency?: string | null;
 };
 
 type TimeSlot = {
@@ -57,6 +59,7 @@ export function CalendarUser({
   closingTime,
   employees,
   bookings = [],
+  currency = "USD",
 }: Props) {
   const [selectedDate, setSelectedDate] = useState<Date>(() => {
     const today = new Date();
@@ -141,16 +144,16 @@ export function CalendarUser({
   return (
     <section className="space-y-4">
       <header className="space-y-1">
-        <h2 className="text-xl font-semibold text-gray-900">{getDateLabel()}</h2>
+        <h2 className="text-xl font-semibold text-gray-900 dark:text-foreground">{getDateLabel()}</h2>
         <DateNavigation selectedDate={selectedDate} onDateChange={setSelectedDate} />
       </header>
 
       {!hasEmployees ? (
-        <div className="rounded-2xl px-4 py-6 text-center text-sm text-pink-700">
+        <div className="rounded-2xl px-4 py-6 text-center text-sm text-pink-700 dark:text-primary">
           This salon doesn&apos;t have any employees yet.
         </div>
       ) : (
-        <div className="rounded-2xl bg-white/90 backdrop-blur border border-white/60 shadow-sm p-4">
+        <div className="rounded-2xl bg-white/80 dark:bg-card/80 backdrop-blur shadow-md border border-white/60 dark:border-border p-4">
           <div className="relative">
             <div
               className="grid text-sm"
@@ -159,13 +162,13 @@ export function CalendarUser({
               }}
             >
               {/* header row */}
-              <div className={`h-10 ${isMobile ? "pr-2" : "pr-9"} flex items-center justify-end text-xs font-semibold text-gray-500`}>
+              <div className={`h-10 ${isMobile ? "pr-2" : "pr-9"} flex items-center justify-end text-xs font-semibold text-gray-500 dark:text-muted-foreground`}>
                 Time
               </div>
               {employees.map((employee) => (
                 <div
                   key={employee.id}
-                  className="h-10 px-3 flex items-center justify-center text-xs font-semibold text-gray-700"
+                  className="h-10 px-3 flex items-center justify-center text-xs font-semibold text-gray-700 dark:text-foreground"
                 >
                   {employee.name}
                 </div>
@@ -190,8 +193,8 @@ export function CalendarUser({
                       key={index}
                       className={`h-full ${
                         index === 0
-                          ? "border-r-2 border-gray-300/90"
-                          : "border-l-2 border-gray-200/90"
+                          ? "border-r-2 border-gray-300/90 dark:border-gray-600"
+                          : "border-l-2 border-gray-200/90 dark:border-gray-600/80"
                       }`}
                     />
                   ))}
@@ -207,15 +210,15 @@ export function CalendarUser({
                   {timeSlots.map((slot, index) => (
                     <Fragment key={slot.label}>
                       <div
-                        className={`${isMobile ? "pr-2" : "pr-9"} pb-5 text-right text-xs text-gray-500`}
+                        className={`${isMobile ? "pr-2" : "pr-9"} pb-5 text-right text-xs text-gray-500 dark:text-muted-foreground`}
                       >
                         {slot.label}
                       </div>
                       {employees.map((employee) => (
                         <div
                           key={`${slot.label}-${employee.id}`}
-                          className={`border-t border-l border-gray-200 h-12 hover:bg-pink-50/60 transition-colors ${
-                            index === 0 ? "border-t-gray-300" : ""
+                          className={`border-t border-l border-gray-200 dark:border-gray-600 h-12 hover:bg-pink-50/60 dark:hover:bg-gray-600/30 transition-colors ${
+                            index === 0 ? "border-t-gray-300 dark:border-t-gray-600" : ""
                           }`}
                         />
                       ))}
@@ -262,6 +265,7 @@ export function CalendarUser({
         booking={selectedBooking}
         isOpen={isModalOpen}
         onOpenChange={setIsModalOpen}
+        currency={currency}
       />
     </section>
   );

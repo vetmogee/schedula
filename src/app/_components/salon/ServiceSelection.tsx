@@ -62,14 +62,14 @@ export function ServiceSelectionMenu({
 
   return (
     <div className="space-y-4 h-full flex flex-col">
-        <h2 className="text-xl font-semibold text-gray-900">Select Services</h2>
+        <h2 className="text-xl font-semibold text-gray-900 dark:text-foreground">Select Services</h2>
       {/* Services List - Scrollable */}
-      <div className="rounded-2xl bg-white/80 backdrop-blur shadow-md p-6 border border-white/60 flex-1 min-h-0">
+      <div className="rounded-2xl bg-white/80 dark:bg-card/80 backdrop-blur shadow-md p-6 border border-white/60 dark:border-border flex-1 min-h-0">
           <div className="space-y-6 max-h-[60vh] overflow-y-auto pr-2">
             {Array.from(servicesByCategory.entries()).map(
               ([categoryName, categoryServices]) => (
                 <div key={categoryName}>
-                  <h3 className="text-lg font-semibold text-gray-800 mb-3">
+                  <h3 className="text-lg font-semibold text-gray-800 dark:text-foreground mb-3">
                     {categoryName}
                   </h3>
                   <div className="space-y-2">
@@ -82,17 +82,17 @@ export function ServiceSelectionMenu({
                           className={`w-full text-left p-3 rounded-lg border transition-colors ${
                             isSelected
                               ? "bg-pink-100 border-pink-300"
-                              : "bg-pink-50/60 border-pink-100 hover:bg-pink-100"
+                              : "bg-pink-50/60 dark:bg-accent/30 border-pink-100 dark:border-border hover:bg-pink-100 dark:hover:bg-accent/50"
                           }`}
                         >
                           <div className="flex justify-between items-start">
                             <div className="flex-1">
-                              <p className="font-medium text-gray-900">{service.name}</p>
-                              <p className="text-sm text-gray-600">
+                              <p className="font-medium text-gray-900 dark:text-foreground">{service.name}</p>
+                              <p className="text-sm text-gray-600 dark:text-muted-foreground">
                                 {formatDuration(service.duration)}
                               </p>
                             </div>
-                            <p className="font-semibold text-gray-900 ml-4">
+                            <p className="font-semibold text-gray-900 dark:text-foreground ml-4">
                               {currency || "USD"} {service.price.toFixed(2)}
                             </p>
                           </div>

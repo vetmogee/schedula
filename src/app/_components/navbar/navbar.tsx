@@ -5,6 +5,7 @@ import { useState, useRef, useEffect } from "react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Home, Paintbrush, Calendar, Menu, Settings, LogOut, BarChart3, UserCircle } from "lucide-react";
 
+
 type CurrentUser = {
   name: string | null;
   role: "CUSTOMER" | "SALON";
@@ -58,16 +59,16 @@ function Dropdown({
       onMouseEnter={openMenu}
       onMouseLeave={closeMenu}
     >
-      <button className="font-medium hover:text-black/70 transition">
+      <button className="font-medium hover:text-black/70 dark:hover:text-foreground/70 transition">
         {label}
       </button>
 
       {open && (
-        <div className="absolute right-0 mt-2 w-36 rounded-lg bg-white text-black shadow-lg overflow-hidden z-[100]">
-          <Link href={loginHref} className="block px-4 py-2 hover:bg-gray-100">
+        <div className="absolute right-0 mt-2 w-36 rounded-lg bg-white dark:bg-card text-black dark:text-foreground shadow-lg overflow-hidden z-[100] border border-transparent dark:border-border">
+          <Link href={loginHref} className="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-accent">
             Login
           </Link>
-          <Link href={registerHref} className="block px-4 py-2 hover:bg-gray-100">
+          <Link href={registerHref} className="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-accent">
             Register
           </Link>
         </div>
@@ -130,32 +131,32 @@ export default function Navbar({ currentUser }: { currentUser?: CurrentUser }) {
   // Navigation links based on user role (for user menu)
   const navLinks = currentUser && currentUser.role === "SALON" ? (
     <>
-      <Link href="/dashboard" onClick={handleLinkClick} className="block px-4 py-2 hover:bg-gray-100 text-left w-full">
+      <Link href="/dashboard" onClick={handleLinkClick} className="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-accent text-left w-full">
         Dashboard
       </Link>
-      <Link href="/calendar" onClick={handleLinkClick} className="block px-4 py-2 hover:bg-gray-100 text-left w-full">
+      <Link href="/calendar" onClick={handleLinkClick} className="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-accent text-left w-full">
         Calendar
       </Link>
-      <Link href="/services" onClick={handleLinkClick} className="block px-4 py-2 hover:bg-gray-100 text-left w-full">
+      <Link href="/services" onClick={handleLinkClick} className="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-accent text-left w-full">
         Services
       </Link>
       {currentUser.salonId && (
-        <Link href={`/salons/${currentUser.salonId}`} onClick={handleLinkClick} className="block px-4 py-2 hover:bg-gray-100 text-left w-full">
+        <Link href={`/salons/${currentUser.salonId}`} onClick={handleLinkClick} className="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-accent text-left w-full">
           My Profile
         </Link>
       )}
     </>
   ) : (
     <>
-      <Link href="/" onClick={handleLinkClick} className="block px-4 py-2 hover:bg-gray-100 text-left w-full">
+      <Link href="/" onClick={handleLinkClick} className="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-accent text-left w-full">
         Home
       </Link>
-      <Link href="/salons" onClick={handleLinkClick} className="block px-4 py-2 hover:bg-gray-100 text-left w-full">
+      <Link href="/salons" onClick={handleLinkClick} className="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-accent text-left w-full">
         Salons
       </Link>
       {currentUser && currentUser.role === "CUSTOMER" && (
-        <Link href="/user" onClick={handleLinkClick} className="block px-4 py-2 hover:bg-gray-100 text-left w-full">
-          My Bookings
+        <Link href="/user" onClick={handleLinkClick} className="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-accent text-left w-full">
+          Bookings
         </Link>
       )}
     </>
@@ -164,20 +165,20 @@ export default function Navbar({ currentUser }: { currentUser?: CurrentUser }) {
   // Mobile navigation links with icons
   const mobileNavLinks = currentUser && currentUser.role === "SALON" ? (
     <>
-      <Link href="/dashboard" onClick={handleLinkClick} className="flex items-center gap-3 px-4 py-3 hover:bg-gray-100 text-left w-full">
+      <Link href="/dashboard" onClick={handleLinkClick} className="flex items-center gap-3 px-4 py-3 hover:bg-gray-100 dark:hover:bg-accent text-left w-full">
         <BarChart3 className="w-5 h-5" />
         <span>Dashboard</span>
       </Link>
-      <Link href="/calendar" onClick={handleLinkClick} className="flex items-center gap-3 px-4 py-3 hover:bg-gray-100 text-left w-full">
+      <Link href="/calendar" onClick={handleLinkClick} className="flex items-center gap-3 px-4 py-3 hover:bg-gray-100 dark:hover:bg-accent text-left w-full">
         <Calendar className="w-5 h-5" />
         <span>Calendar</span>
       </Link>
-      <Link href="/services" onClick={handleLinkClick} className="flex items-center gap-3 px-4 py-3 hover:bg-gray-100 text-left w-full">
+      <Link href="/services" onClick={handleLinkClick} className="flex items-center gap-3 px-4 py-3 hover:bg-gray-100 dark:hover:bg-accent text-left w-full">
         <Paintbrush className="w-5 h-5" />
         <span>Services</span>
       </Link>
       {currentUser.salonId && (
-        <Link href={`/salons/${currentUser.salonId}`} onClick={handleLinkClick} className="flex items-center gap-3 px-4 py-3 hover:bg-gray-100 text-left w-full">
+        <Link href={`/salons/${currentUser.salonId}`} onClick={handleLinkClick} className="flex items-center gap-3 px-4 py-3 hover:bg-gray-100 dark:hover:bg-accent text-left w-full">
           <UserCircle className="w-5 h-5" />
           <span>My Profile</span>
         </Link>
@@ -185,25 +186,25 @@ export default function Navbar({ currentUser }: { currentUser?: CurrentUser }) {
     </>
   ) : (
     <>
-      <Link href="/" onClick={handleLinkClick} className="flex items-center gap-3 px-4 py-3 hover:bg-gray-100 text-left w-full">
+      <Link href="/" onClick={handleLinkClick} className="flex items-center gap-3 px-4 py-3 hover:bg-gray-100 dark:hover:bg-accent text-left w-full">
         <Home className="w-5 h-5" />
         <span>Home</span>
       </Link>
-      <Link href="/salons" onClick={handleLinkClick} className="flex items-center gap-3 px-4 py-3 hover:bg-gray-100 text-left w-full">
+      <Link href="/salons" onClick={handleLinkClick} className="flex items-center gap-3 px-4 py-3 hover:bg-gray-100 dark:hover:bg-accent text-left w-full">
         <Paintbrush className="w-5 h-5" />
         <span>Salons</span>
       </Link>
       {currentUser && currentUser.role === "CUSTOMER" && (
-        <Link href="/user" onClick={handleLinkClick} className="flex items-center gap-3 px-4 py-3 hover:bg-gray-100 text-left w-full">
+        <Link href="/user" onClick={handleLinkClick} className="flex items-center gap-3 px-4 py-3 hover:bg-gray-100 dark:hover:bg-accent text-left w-full">
           <Calendar className="w-5 h-5" />
-          <span>My Bookings</span>
+          <span>Bookings</span>
         </Link>
       )}
     </>
   );
 
   return (
-    <div className="relative z-50 w-full h-20 px-4 md:px-8 grid grid-cols-3 items-center border-b bg-[#ffb3c6] backdrop-blur text-black">
+    <div className="relative z-50 w-full h-20 px-4 md:px-8 grid grid-cols-3 items-center border-b border-black/10 dark:border-border bg-[#ffb3c6] dark:bg-secondary backdrop-blur text-black dark:text-foreground">
       {/* Left */}
       <Link 
         href={currentUser && currentUser.role === "SALON" ? "/dashboard" : "/"} 
@@ -216,39 +217,39 @@ export default function Navbar({ currentUser }: { currentUser?: CurrentUser }) {
       <div className="flex justify-center items-center">
         {currentUser && currentUser.role === "SALON" ? (
           <div className="hidden md:flex gap-8 font-medium">
-            <Link href="/dashboard" className="hover:text-black/70 transition flex flex-col items-center gap-1">
+            <Link href="/dashboard" className="hover:text-black/70 dark:hover:text-foreground/70 transition flex flex-col items-center gap-1">
               <BarChart3 className="w-5 h-5" />
               <span>Dashboard</span>
             </Link>
-            <Link href="/calendar" className="hover:text-black/70 transition flex flex-col items-center gap-1">
+            <Link href="/calendar" className="hover:text-black/70 dark:hover:text-foreground/70 transition flex flex-col items-center gap-1">
               <Calendar className="w-5 h-5" />
               <span>Calendar</span>
             </Link>
-            <Link href="/services" className="hover:text-black/70 transition flex flex-col items-center gap-1">
+            <Link href="/services" className="hover:text-black/70 dark:hover:text-foreground/70 transition flex flex-col items-center gap-1">
               <Paintbrush className="w-5 h-5" />
               <span>Services</span>
             </Link>
             {currentUser.salonId && (
-              <Link href={`/salons/${currentUser.salonId}`} className="hover:text-black/70 transition flex flex-col items-center gap-1">
+              <Link href={`/salons/${currentUser.salonId}`} className="hover:text-black/70 dark:hover:text-foreground/70 transition flex flex-col items-center gap-1">
                 <UserCircle className="w-5 h-5" />
                 <span>My Profile</span>
               </Link>
             )}
           </div>
         ) : (
-          <div className="hidden md:flex gap-8 font-medium">
-            <Link href="/" className="hover:text-black/70 transition flex flex-col items-center gap-1">
+          <div className="hidden md:grid md:grid-cols-3 gap-8 font-medium place-items-center">
+            <Link href="/" className="hover:text-black/70 dark:hover:text-foreground/70 transition flex flex-col items-center gap-1">
               <Home className="w-5 h-5" />
               <span>Home</span>
             </Link>
-            <Link href="/salons" className="hover:text-black/70 transition flex flex-col items-center gap-1">
+            <Link href="/salons" className="hover:text-black/70 dark:hover:text-foreground/70 transition flex flex-col items-center gap-1">
               <Paintbrush className="w-5 h-5" />
               <span>Salons</span>
             </Link>
             {currentUser && currentUser.role === "CUSTOMER" && (
-              <Link href="/user" className="hover:text-black/70 transition flex flex-col items-center gap-1">
+              <Link href="/user" className="hover:text-black/70 dark:hover:text-foreground/70 transition flex flex-col items-center gap-1">
                 <Calendar className="w-5 h-5" />
-                <span>My Bookings</span>
+                <span>Bookings</span>
               </Link>
             )}
           </div>
@@ -256,7 +257,7 @@ export default function Navbar({ currentUser }: { currentUser?: CurrentUser }) {
       </div>
 
       {/* Right */}
-      <div className="flex gap-6 items-center justify-self-end">
+      <div className="flex gap-4 items-center justify-self-end">
         {currentUser ? (
           <div
             ref={userMenuRef}
@@ -266,44 +267,44 @@ export default function Navbar({ currentUser }: { currentUser?: CurrentUser }) {
           >
             <button 
               onClick={isMobile ? toggleUserMenu : undefined}
-              className="font-medium flex items-center gap-2 hover:text-black/70 transition"
+              className="font-medium flex items-center gap-2 hover:text-black/70 dark:hover:text-foreground/70 transition"
             >
               <span>{currentUser.name ?? "User"}</span>
-              <span className="uppercase text-xs px-2 py-1 rounded-full bg-white/70 text-black">
+              <span className="uppercase text-xs px-2 py-1 rounded-full bg-white/70 dark:bg-accent text-black dark:text-foreground">
                 {currentUser.role}
               </span>
             </button>
 
             {userMenuOpen && (
-              <div className={`absolute right-0 mt-2 rounded-lg bg-white text-black shadow-lg overflow-hidden z-[100] ${isMobile && currentUser && currentUser.role === "SALON" ? "w-56" : "w-44"}`}>
+              <div className={`absolute right-0 mt-2 rounded-lg bg-white dark:bg-card text-black dark:text-foreground shadow-lg overflow-hidden z-[100] border border-transparent dark:border-border ${isMobile && currentUser && currentUser.role === "SALON" ? "w-56" : "w-44"}`}>
                 {/* Navigation links - shown on mobile for salon users */}
                 {isMobile && currentUser && currentUser.role === "SALON" && (
                   <>
-                    <Link href="/dashboard" onClick={handleLinkClick} className="flex items-center gap-2 px-4 py-2 hover:bg-gray-100 text-left w-full">
+                    <Link href="/dashboard" onClick={handleLinkClick} className="flex items-center gap-2 px-4 py-2 hover:bg-gray-100 dark:hover:bg-accent text-left w-full">
                       <BarChart3 className="w-4 h-4" />
                       <span>Dashboard</span>
                     </Link>
-                    <Link href="/calendar" onClick={handleLinkClick} className="flex items-center gap-2 px-4 py-2 hover:bg-gray-100 text-left w-full">
+                    <Link href="/calendar" onClick={handleLinkClick} className="flex items-center gap-2 px-4 py-2 hover:bg-gray-100 dark:hover:bg-accent text-left w-full">
                       <Calendar className="w-4 h-4" />
                       <span>Calendar</span>
                     </Link>
-                    <Link href="/services" onClick={handleLinkClick} className="flex items-center gap-2 px-4 py-2 hover:bg-gray-100 text-left w-full">
+                    <Link href="/services" onClick={handleLinkClick} className="flex items-center gap-2 px-4 py-2 hover:bg-gray-100 dark:hover:bg-accent text-left w-full">
                       <Paintbrush className="w-4 h-4" />
                       <span>Services</span>
                     </Link>
                     {currentUser.salonId && (
-                      <Link href={`/salons/${currentUser.salonId}`} onClick={handleLinkClick} className="flex items-center gap-2 px-4 py-2 hover:bg-gray-100 text-left w-full">
+                      <Link href={`/salons/${currentUser.salonId}`} onClick={handleLinkClick} className="flex items-center gap-2 px-4 py-2 hover:bg-gray-100 dark:hover:bg-accent text-left w-full">
                         <UserCircle className="w-4 h-4" />
                         <span>My Profile</span>
                       </Link>
                     )}
-                    <div className="border-t border-gray-200 my-1"></div>
+                    <div className="border-t border-gray-200 dark:border-border my-1"></div>
                   </>
                 )}
                 <Link
                   href="/settings"
                   onClick={handleLinkClick}
-                  className="flex items-center gap-2 px-4 py-2 hover:bg-gray-100 text-left w-full"
+                  className="flex items-center gap-2 px-4 py-2 hover:bg-gray-100 dark:hover:bg-accent text-left w-full"
                 >
                   <Settings className="w-4 h-4" />
                   <span>Settings</span>
@@ -311,7 +312,7 @@ export default function Navbar({ currentUser }: { currentUser?: CurrentUser }) {
                 <a
                   href="/logout"
                   onClick={handleLinkClick}
-                  className="flex items-center gap-2 px-4 py-2 hover:bg-gray-100 text-left w-full"
+                  className="flex items-center gap-2 px-4 py-2 hover:bg-gray-100 dark:hover:bg-accent text-left w-full"
                 >
                   <LogOut className="w-4 h-4" />
                   <span>Logout</span>
@@ -326,23 +327,23 @@ export default function Navbar({ currentUser }: { currentUser?: CurrentUser }) {
               <div ref={mobileMenuRef} className="relative">
                 <button
                   onClick={toggleMobileMenu}
-                  className="p-2 hover:bg-white/20 rounded-lg transition"
+                  className="p-2 hover:bg-white/20 dark:hover:bg-accent/50 rounded-lg transition"
                   aria-label="Menu"
                 >
                   <Menu className="w-6 h-6" />
                 </button>
 
                 {mobileMenuOpen && (
-                  <div className="absolute right-0 mt-2 w-56 rounded-lg bg-white text-black shadow-lg overflow-hidden z-[100]">
+                  <div className="absolute right-0 mt-2 w-56 rounded-lg bg-white dark:bg-card text-black dark:text-foreground shadow-lg overflow-hidden z-[100] border border-transparent dark:border-border">
                     {mobileNavLinks}
-                    <div className="border-t border-gray-200 my-1"></div>
-                    <Link href="/login" onClick={handleLinkClick} className="flex items-center gap-3 px-4 py-3 hover:bg-gray-100 text-left w-full">
+                    <div className="border-t border-gray-200 dark:border-border my-1"></div>
+                    <Link href="/login" onClick={handleLinkClick} className="flex items-center gap-3 px-4 py-3 hover:bg-gray-100 dark:hover:bg-accent text-left w-full">
                       Login
                     </Link>
-                    <Link href="/register" onClick={handleLinkClick} className="flex items-center gap-3 px-4 py-3 hover:bg-gray-100 text-left w-full">
+                    <Link href="/register" onClick={handleLinkClick} className="flex items-center gap-3 px-4 py-3 hover:bg-gray-100 dark:hover:bg-accent text-left w-full">
                       Register as Customer
                     </Link>
-                    <Link href="/salon-register" onClick={handleLinkClick} className="flex items-center gap-3 px-4 py-3 hover:bg-gray-100 text-left w-full">
+                    <Link href="/salon-register" onClick={handleLinkClick} className="flex items-center gap-3 px-4 py-3 hover:bg-gray-100 dark:hover:bg-accent text-left w-full">
                       Register as Business
                     </Link>
                   </div>
