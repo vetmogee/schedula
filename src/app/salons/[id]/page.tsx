@@ -99,13 +99,13 @@ export default async function SalonDetailPage({ params }: SalonDetailPageProps) 
     notFound();
   }
 
-  // Format time for display
+  // Format time for display (deterministic – avoids server/client locale mismatch)
   const formatTime = (date: Date | null) => {
     if (!date) return null;
-    return new Date(date).toLocaleTimeString(undefined, {
-      hour: "2-digit",
-      minute: "2-digit",
-    });
+    const d = new Date(date);
+    const h = d.getHours().toString().padStart(2, "0");
+    const m = d.getMinutes().toString().padStart(2, "0");
+    return `${h}:${m}`;
   };
 
   const openingTime = formatTime(salon.openingTime);
@@ -157,7 +157,7 @@ export default async function SalonDetailPage({ params }: SalonDetailPageProps) 
     <main className="min-h-screen bg-gradient-to-br from-[#ffb5c2] to-[#fdd7de] dark:from-background dark:to-background py-10 px-4">
       {/* Google Maps Embed - Full Width */}
       {embedMapUrl && (
-        <div className="w-full mb-6">
+        <div className="-mt-10 -mx-4 w-[calc(100%+2rem)] mb-5">
           <iframe
             src={embedMapUrl}
             width="100%"

@@ -40,11 +40,8 @@ export default function LoginPage() {
       if (!res.ok) {
         setErrors(res.errors || {})
       } else {
-        if (res.role === "SALON") {
-          window.location.href = "/dashboard"
-        } else {
-          window.location.href = "/"
-        }
+        const dest = res.role === "SALON" ? "/dashboard" : "/"
+        window.location.href = `/logging-in?redirect=${encodeURIComponent(dest)}`
       }
     })
   }
