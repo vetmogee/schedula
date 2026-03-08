@@ -92,7 +92,7 @@ export function DateTimeSelection({
     today.setHours(0, 0, 0, 0);
     const selectedDateOnly = new Date(date);
     selectedDateOnly.setHours(0, 0, 0, 0);
-    
+
     // Only check for past times if the selected date is today
     if (selectedDateOnly.getTime() === today.getTime() && slotDateTime < now) {
       return true;
@@ -102,7 +102,7 @@ export function DateTimeSelection({
     const maxDate = new Date(now);
     maxDate.setMonth(now.getMonth() + 1);
     maxDate.setHours(23, 59, 59, 999);
-    
+
     if (date > maxDate) {
       return true;
     }
@@ -137,9 +137,9 @@ export function DateTimeSelection({
     // Use actual service duration if available, otherwise default to 30 minutes (use UTC methods to avoid timezone issues)
     const slotDurationMinutes = selectedServices.length > 0
       ? selectedServices.reduce((total, service) => {
-          const d = new Date(service.duration);
-          return total + d.getUTCHours() * 60 + d.getUTCMinutes();
-        }, 0)
+        const d = new Date(service.duration);
+        return total + d.getUTCHours() * 60 + d.getUTCMinutes();
+      }, 0)
       : 30;
     slotEndTime.setMinutes(slotEndTime.getMinutes() + slotDurationMinutes);
 
@@ -182,14 +182,14 @@ export function DateTimeSelection({
   const dateOptions = useMemo(() => {
     const options: { value: string; label: string; date: Date }[] = [];
     const currentDate = new Date(today);
-    
+
     while (currentDate <= maxBookingDate) {
       const value = currentDate.toISOString().split("T")[0];
       const label = format(currentDate, "dd.MM.yyyy");
       options.push({ value, label, date: new Date(currentDate) });
       currentDate.setDate(currentDate.getDate() + 1);
     }
-    
+
     return options;
   }, [today, maxBookingDate]);
 
@@ -199,78 +199,79 @@ export function DateTimeSelection({
 
   return (
     <div className={`space-y-4 ${disabled ? 'opacity-50 pointer-events-none' : ''}`}>
-      <h3 className="-ml-6 text-xl font-semibold text-gray-900">Select Date & Time</h3>
-      
-      {disabled && (
-        <p className="text-sm text-gray-500 text-center py-2">
-          Please select a service first
-        </p>
-      )}
-      
-      {/* Date Selection */}
-      <div className="space-y-3">
-        <h4 className="text-sm font-medium text-gray-700">Date</h4>
-        <Select
-          value={selectedDateValue}
-          onValueChange={(value) => {
-            const option = dateOptions.find((opt) => opt.value === value);
-            onDateSelect(option ? option.date : null);
-          }}
-          disabled={disabled}
-        >
-          <SelectTrigger className={`w-full bg-white/80 ${disabled ? 'cursor-not-allowed' : ''}`}>
-            <SelectValue placeholder="Select a date" />
-          </SelectTrigger>
-          <SelectContent>
-            {dateOptions.map((option) => (
-              <SelectItem key={option.value} value={option.value}>
-                {option.label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
+      <h2 className="text-xl font-semibold text-gray-900 dark:text-foreground">Select Date & Time</h2>
 
-      {/* Time Selection */}
-      {selectedDate && (
+      <div className="rounded-2xl bg-white/80 dark:bg-card/80 backdrop-blur shadow-md p-6 border border-white/60 dark:border-border space-y-6">
+        {disabled && (
+          <p className="text-sm text-gray-500 dark:text-muted-foreground text-center py-2">
+            Please select a service first
+          </p>
+        )}
+
+        {/* Date Selection */}
         <div className="space-y-3">
-          <h4 className="text-sm font-medium text-gray-700">Time</h4>
-          {!selectedEmployeeId && (
-            <p className="text-sm text-gray-500 text-center">
-              Please select an employee first
-            </p>
-          )}
-          <div className="rounded-2xl bg-white/80 backdrop-blur shadow-md p-4 border border-white/60">
-            <div className="grid grid-cols-3 sm:grid-cols-4 gap-2 max-h-[200px] overflow-y-auto">
-              {timeSlots.map((time) => {
-                const isSelected = selectedTime === time;
-                const isUnavailable = !selectedEmployeeId || isTimeSlotUnavailable(time, selectedDate, selectedEmployeeId);
-                return (
-                  <button
-                    key={time}
-                    onClick={() => !isUnavailable && onTimeSelect(isSelected ? null : time)}
-                    disabled={isUnavailable}
-                    className={`p-2 rounded-lg border-2 transition-all text-sm ${
-                      isUnavailable
-                        ? "bg-gray-100 border-gray-300 text-gray-400 cursor-not-allowed"
-                        : isSelected
-                        ? "bg-pink-100 border-pink-500 font-semibold text-pink-900"
-                        : "bg-white border-gray-200 hover:border-pink-300 hover:bg-pink-50/60 text-gray-900"
-                    }`}
-                  >
-                    {time}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-          {selectedTime && (
-            <p className="text-sm text-gray-600 text-center">
-              Selected time: {selectedTime}
-            </p>
-          )}
+          <h4 className="text-sm font-medium text-gray-700 dark:text-muted-foreground">Date</h4>
+          <Select
+            value={selectedDateValue}
+            onValueChange={(value) => {
+              const option = dateOptions.find((opt) => opt.value === value);
+              onDateSelect(option ? option.date : null);
+            }}
+            disabled={disabled}
+          >
+            <SelectTrigger className={`w-full bg-white/80 dark:bg-card/80 ${disabled ? 'cursor-not-allowed' : ''}`}>
+              <SelectValue placeholder="Select a date" />
+            </SelectTrigger>
+            <SelectContent>
+              {dateOptions.map((option) => (
+                <SelectItem key={option.value} value={option.value}>
+                  {option.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
-      )}
+
+        {/* Time Selection */}
+        {selectedDate && (
+          <div className="space-y-3">
+            <h4 className="text-sm font-medium text-gray-700 dark:text-muted-foreground">Time</h4>
+            {!selectedEmployeeId && (
+              <p className="text-sm text-gray-500 dark:text-muted-foreground text-center">
+                Please select an employee first
+              </p>
+            )}
+            <div className="rounded-2xl bg-white/80 dark:bg-card/80 backdrop-blur shadow-md p-4 border border-white/60 dark:border-border">
+              <div className="grid grid-cols-3 sm:grid-cols-4 gap-2 max-h-[200px] overflow-y-auto">
+                {timeSlots.map((time) => {
+                  const isSelected = selectedTime === time;
+                  const isUnavailable = !selectedEmployeeId || isTimeSlotUnavailable(time, selectedDate, selectedEmployeeId);
+                  return (
+                    <button
+                      key={time}
+                      onClick={() => !isUnavailable && onTimeSelect(isSelected ? null : time)}
+                      disabled={isUnavailable}
+                      className={`p-2 rounded-lg border-2 transition-all text-sm ${isUnavailable
+                        ? "bg-gray-100 dark:bg-gray-800 border-gray-300 dark:border-gray-700 text-gray-400 dark:text-gray-500 cursor-not-allowed"
+                        : isSelected
+                          ? "bg-pink-100 dark:bg-pink-900/40 border-pink-500 dark:border-pink-700 font-semibold text-pink-900 dark:text-pink-100"
+                          : "bg-white dark:bg-card border-gray-200 dark:border-border hover:border-pink-300 dark:hover:border-border hover:bg-pink-50/60 dark:hover:bg-accent/50 text-gray-900 dark:text-foreground"
+                        }`}
+                    >
+                      {time}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+            {selectedTime && (
+              <p className="text-sm text-gray-600 dark:text-muted-foreground text-center">
+                Selected time: {selectedTime}
+              </p>
+            )}
+          </div>
+        )}
+      </div>
     </div>
   );
 }

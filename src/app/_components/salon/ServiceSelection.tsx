@@ -61,50 +61,56 @@ export function ServiceSelectionMenu({
   });
 
   return (
-    <div className="space-y-4 h-full flex flex-col">
+    <div className="space-y-4 h-full flex flex-col relative">
+      <div className="sticky top-0 z-20 flex items-center justify-between pb-2 pt-1 bg-white/80 dark:bg-background/80 backdrop-blur rounded-b-xl">
         <h2 className="text-xl font-semibold text-gray-900 dark:text-foreground">Select Services</h2>
+        {selectedServices.length > 0 && (
+          <h3 className="text-sm font-semibold text-gray-700 dark:text-muted-foreground pr-2">
+            Selected Services ({selectedServices.length})
+          </h3>
+        )}
+      </div>
       {/* Services List - Scrollable */}
       <div className="rounded-2xl bg-white/80 dark:bg-card/80 backdrop-blur shadow-md p-6 border border-white/60 dark:border-border flex-1 min-h-0">
-          <div className="space-y-6 max-h-[60vh] overflow-y-auto pr-2">
-            {Array.from(servicesByCategory.entries()).map(
-              ([categoryName, categoryServices]) => (
-                <div key={categoryName}>
-                  <h3 className="text-lg font-semibold text-gray-800 dark:text-foreground mb-3">
-                    {categoryName}
-                  </h3>
-                  <div className="space-y-2">
-                    {categoryServices.map((service) => {
-                      const isSelected = selectedServices.some((s) => s.id === service.id);
-                      return (
-                        <button
-                          key={service.id}
-                          onClick={() => toggleService(service)}
-                          className={`w-full text-left p-3 rounded-lg border transition-colors ${
-                            isSelected
-                              ? "bg-pink-100 border-pink-300"
-                              : "bg-pink-50/60 dark:bg-accent/30 border-pink-100 dark:border-border hover:bg-pink-100 dark:hover:bg-accent/50"
+        <div className="space-y-6 max-h-[60vh] overflow-y-auto pr-2">
+          {Array.from(servicesByCategory.entries()).map(
+            ([categoryName, categoryServices]) => (
+              <div key={categoryName}>
+                <h3 className="text-lg font-semibold text-gray-800 dark:text-foreground mb-3">
+                  {categoryName}
+                </h3>
+                <div className="space-y-2">
+                  {categoryServices.map((service) => {
+                    const isSelected = selectedServices.some((s) => s.id === service.id);
+                    return (
+                      <button
+                        key={service.id}
+                        onClick={() => toggleService(service)}
+                        className={`w-full text-left p-3 rounded-lg border transition-colors ${isSelected
+                          ? "bg-pink-100 dark:bg-pink-900/40 border-pink-300 dark:border-pink-700"
+                          : "bg-pink-50/60 dark:bg-accent/30 border-pink-100 dark:border-border hover:bg-pink-100 dark:hover:bg-accent/50"
                           }`}
-                        >
-                          <div className="flex justify-between items-start">
-                            <div className="flex-1">
-                              <p className="font-medium text-gray-900 dark:text-foreground">{service.name}</p>
-                              <p className="text-sm text-gray-600 dark:text-muted-foreground">
-                                {formatDuration(service.duration)}
-                              </p>
-                            </div>
-                            <p className="font-semibold text-gray-900 dark:text-foreground ml-4">
-                              {currency || "USD"} {service.price.toFixed(2)}
+                      >
+                        <div className="flex justify-between items-start">
+                          <div className="flex-1">
+                            <p className="font-medium text-gray-900 dark:text-foreground">{service.name}</p>
+                            <p className="text-sm text-gray-600 dark:text-muted-foreground">
+                              {formatDuration(service.duration)}
                             </p>
                           </div>
-                        </button>
-                      );
-                    })}
-                  </div>
+                          <p className="font-semibold text-gray-900 dark:text-foreground ml-4">
+                            {currency || "USD"} {service.price.toFixed(2)}
+                          </p>
+                        </div>
+                      </button>
+                    );
+                  })}
                 </div>
-              ),
-            )}
-          </div>
+              </div>
+            ),
+          )}
         </div>
+      </div>
 
     </div>
   );

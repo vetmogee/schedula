@@ -101,10 +101,10 @@ export function ReservationModal({
     });
   };
 
-  const canCreateReservation = 
-    selectedServices.length > 0 && 
-    selectedEmployeeId !== null && 
-    selectedDate !== null && 
+  const canCreateReservation =
+    selectedServices.length > 0 &&
+    selectedEmployeeId !== null &&
+    selectedDate !== null &&
     selectedTime !== null;
 
   // Calculate totals
@@ -156,29 +156,25 @@ export function ReservationModal({
 
           <div className="flex-1 overflow-y-auto px-5 space-y-6 pb-4">
             {/* Employee Selection */}
-            <div className="rounded-2xl bg-white/80 dark:bg-card/80 backdrop-blur shadow-md p-6 border border-white/60 dark:border-border">
-              <EmployeeSelection
-                employees={employees}
-                selectedEmployeeId={selectedEmployeeId}
-                onEmployeeSelect={setSelectedEmployeeId}
-              />
-            </div>
+            <EmployeeSelection
+              employees={employees}
+              selectedEmployeeId={selectedEmployeeId}
+              onEmployeeSelect={setSelectedEmployeeId}
+            />
 
             {/* Date & Time Selection */}
-            <div className="rounded-2xl bg-white/80 dark:bg-card/80 backdrop-blur shadow-md p-6 border border-white/60 dark:border-border">
-              <DateTimeSelection
-                selectedDate={selectedDate}
-                selectedTime={selectedTime}
-                selectedEmployeeId={selectedEmployeeId}
-                openingTime={openingTime}
-                closingTime={closingTime}
-                bookings={bookings}
-                selectedServices={selectedServices}
-                onDateSelect={setSelectedDate}
-                onTimeSelect={setSelectedTime}
-                disabled={selectedServices.length === 0}
-              />
-            </div>
+            <DateTimeSelection
+              selectedDate={selectedDate}
+              selectedTime={selectedTime}
+              selectedEmployeeId={selectedEmployeeId}
+              openingTime={openingTime}
+              closingTime={closingTime}
+              bookings={bookings}
+              selectedServices={selectedServices}
+              onDateSelect={setSelectedDate}
+              onTimeSelect={setSelectedTime}
+              disabled={selectedServices.length === 0}
+            />
 
             {/* Service Selection */}
             <ServiceSelectionMenu
@@ -191,10 +187,7 @@ export function ReservationModal({
           {/* Fixed Bottom Section - Selected Services and Totals */}
           {selectedServices.length > 0 && (
             <div className="sticky bottom-0 bg-white/95 dark:bg-card/95 backdrop-blur border-t border-gray-200 dark:border-border shadow-lg z-10 px-5 py-4">
-              <div className="flex items-center justify-between mb-3">
-                <h3 className="text-sm font-semibold text-gray-700 dark:text-muted-foreground">
-                  Selected Services ({selectedServices.length})
-                </h3>
+              <div className="flex items-center justify-end mb-3">
                 <div className="flex items-center gap-4 text-sm text-gray-600 dark:text-muted-foreground">
                   {selectedEmployeeId && employees.find((e) => e.id === selectedEmployeeId) && (
                     <span>

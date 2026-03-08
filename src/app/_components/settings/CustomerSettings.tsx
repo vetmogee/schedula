@@ -21,17 +21,17 @@ export function CustomerSettings({
   return (
     <section className="space-y-6">
       <header className="space-y-1">
-        <h2 className="text-xl font-semibold text-gray-900">
+        <h2 className="text-xl font-semibold text-gray-900 dark:text-foreground">
           Account settings
         </h2>
-        <p className="text-sm text-gray-600">
+        <p className="text-sm text-gray-600 dark:text-muted-foreground">
           Manage your personal details and booking preferences.
         </p>
       </header>
 
       <form
         action={updateCustomerSettings}
-        className="space-y-6 rounded-xl border border-pink-100 bg-pink-50/60 p-4"
+        className="space-y-6 rounded-xl border border-pink-100 dark:border-border bg-pink-50/60 dark:bg-accent/20 p-4"
       >
         <div className="grid gap-4">
           <div className="space-y-1.5">
