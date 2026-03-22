@@ -40,7 +40,30 @@ async function getCurrentCustomer() {
   }
 }
 
+async function incrementLoopCounter() {
+  try {
+    let loop = await prisma.loop.findFirst();
+    if (!loop) {
+      loop = await prisma.loop.create({
+        data: { count: 1 }
+      });
+    } else {
+      loop = await prisma.loop.update({
+        where: { id: loop.id },
+        data: { count: loop.count + 1 }
+      });
+    }
+    return loop.count;
+  } catch (error) {
+    console.error("Error updating loop counter:", error);
+    return null;
+  }
+}
+
 export default async function Home() {
+  // Increment the counter every time the page is opened
+  const currentCount = await incrementLoopCounter();
+  
   const customer = await getCurrentCustomer();
   
   // Fetch upcoming booking and random salons only if user is a customer
@@ -67,7 +90,11 @@ export default async function Home() {
 
         {/* Show explore salons section only for customers */}
         {customer && <ExploreSalons salons={salons} />}
-
+        
+        {/* Loop Count Tracker */}
+        <div className="mt-8 text-center text-sm text-gray-500/80 dark:text-gray-400">
+          Page views: {currentCount ?? 0}
+        </div>
       </div>
     </div>
   );

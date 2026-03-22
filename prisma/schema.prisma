@@ -117,6 +117,14 @@ model SalonPicture {
   @@map("salon_pictures")
 }
 
+model Loop {
+  id        Int      @id @default(autoincrement())
+  count     Int      @default(0)
+  updatedAt DateTime @updatedAt
+  
+  @@map("loops")
+}
+
 enum UserRole {
   CUSTOMER
   SALON
