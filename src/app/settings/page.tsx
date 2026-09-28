@@ -148,7 +148,7 @@ async function addSalonPicture(prevState: string | null, formData: FormData): Pr
     
     if (authError) {
       console.error("[Server] Auth error:", authError)
-      return `Authentication error: ${authError.message}`
+      return "Your session has expired. Please log in again."
     }
     
     const authUser = authData?.user
@@ -169,8 +169,7 @@ async function addSalonPicture(prevState: string | null, formData: FormData): Pr
       })
     } catch (dbError: any) {
       console.error("[Server] Database error finding salon:", dbError)
-      const errorMsg = dbError?.message || "Database error"
-      return `Database error finding salon: ${errorMsg}. Please try again.`
+      return "Could not load your salon. Please try again."
     }
 
     if (!salon) {
@@ -230,7 +229,7 @@ async function addSalonPicture(prevState: string | null, formData: FormData): Pr
       }
     } catch (bufferError: any) {
       console.error("[Server] Error converting file to buffer:", bufferError)
-      return `Error processing file: ${bufferError?.message || "Unknown error"}. Please try again with a different file.`
+      return "Error processing file. Please try again with a different file."
     }
 
     console.log("[Server] Creating salon picture record...")
@@ -255,7 +254,7 @@ async function addSalonPicture(prevState: string | null, formData: FormData): Pr
         return "A picture with this name already exists. Please rename the file and try again."
       }
       if (dbError?.code === "P2003") {
-        return `Invalid salon reference (salonId: ${salon.id}). Please refresh the page and try again.`
+        return "Invalid salon reference. Please refresh the page and try again."
       }
       if (dbError?.code === "P2001") {
         return "Database record not found. Please refresh the page and try again."
@@ -269,7 +268,7 @@ async function addSalonPicture(prevState: string | null, formData: FormData): Pr
         return "Database connection error. Please check your connection and try again."
       }
       
-      return `Database error: ${dbError?.message || "Failed to save picture. Please try again."}`
+      return "Failed to save picture. Please try again."
     }
     
     // Revalidate paths
@@ -291,10 +290,6 @@ async function addSalonPicture(prevState: string | null, formData: FormData): Pr
     // Check if it's a redirect error (which is expected and should be re-thrown)
     if (error?.message?.includes("NEXT_REDIRECT") || error?.digest?.includes("NEXT_REDIRECT")) {
       throw error // Re-throw redirect errors so Next.js can handle them
-    }
-    
-    if (error instanceof Error) {
-      return `Upload failed: ${error.message}`
     }
     
     return "Failed to upload picture. Please try again or contact support if the problem persists."

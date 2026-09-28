@@ -5,6 +5,9 @@ import { supabase } from "@/lib/supabase/server"
 import { cookies } from "next/headers"
 import { revalidatePath } from "next/cache"
 
+/** Error whose message is safe to show to the client. */
+class BookingConflictError extends Error {}
+
 /**
  * Get the current authenticated user from the database
  */
@@ -273,7 +276,7 @@ export async function createBookingAction(data: {
       )
 
       if (conflictCheck.hasConflict) {
-        throw new Error("This time slot was just booked by another customer. Please select a different time.")
+        throw new BookingConflictError("This time slot was just booked by another customer. Please select a different time.")
       }
 
       // Create the booking
@@ -331,16 +334,32 @@ export async function createBookingAction(data: {
     console.error("Error creating booking:", error)
     return {
       ok: false,
-      error: error instanceof Error ? error.message : "Failed to create booking",
+      error: error instanceof BookingConflictError ? error.message : "Failed to create booking",
     }
   }
 }
 
 /**
- * Get bookings for a specific salon with proper filtering
+ * Get bookings for a specific salon with proper filtering.
+ * Only the salon's owner may read them (response includes customer PII).
  */
 export async function getSalonBookings(salonId: number, startDate?: Date, endDate?: Date) {
   try {
+    const user = await getCurrentUser()
+
+    if (!user || user.role !== "SALON") {
+      return { ok: false, error: "Unauthorized", bookings: [] }
+    }
+
+    const salon = await prisma.salon.findUnique({
+      where: { id: salonId },
+      select: { userId: true },
+    })
+
+    if (!salon || salon.userId !== user.id) {
+      return { ok: false, error: "Unauthorized", bookings: [] }
+    }
+
     const where: {
       salonId: number
       date?: {
@@ -392,7 +411,7 @@ export async function getSalonBookings(salonId: number, startDate?: Date, endDat
     console.error("Error fetching salon bookings:", error)
     return {
       ok: false,
-      error: error instanceof Error ? error.message : "Failed to fetch bookings",
+      error: "Failed to fetch bookings",
       bookings: [],
     }
   }
@@ -519,7 +538,7 @@ export async function getAvailableTimeSlots(
     console.error("Error getting available time slots:", error)
     return {
       ok: false,
-      error: error instanceof Error ? error.message : "Failed to get available time slots",
+      error: "Failed to get available time slots",
       timeSlots: [],
     }
   }
@@ -587,7 +606,7 @@ export async function getNextUpcomingBooking() {
     console.error("Error fetching next upcoming booking:", error)
     return {
       ok: false,
-      error: error instanceof Error ? error.message : "Failed to fetch upcoming booking",
+      error: "Failed to fetch upcoming booking",
       booking: null,
     }
   }
@@ -627,7 +646,7 @@ export async function getRandomSalons(limit: number = 6) {
     console.error("Error fetching random salons:", error)
     return {
       ok: false,
-      error: error instanceof Error ? error.message : "Failed to fetch salons",
+      error: "Failed to fetch salons",
       salons: [],
     }
   }
