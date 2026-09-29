@@ -7,12 +7,14 @@ import { loginAction } from "@/app/actions/auth"
 import { Button } from "@/app/_components/ui/button"
 import { Input } from "@/app/_components/ui/input"
 import { Label } from "@/app/_components/ui/label"
+import { LoggingInScreen } from "@/app/_components/logging-in-screen"
 
 export default function LoginPage() {
   const [errors, setErrors] = useState<Record<string, string[]>>({})
   const [isPending, startTransition] = useTransition()
   const [rememberMe, setRememberMe] = useState(false)
   const [savedEmail, setSavedEmail] = useState("")
+  const [loggedIn, setLoggedIn] = useState(false)
   const searchParams = useSearchParams()
   const loggedOut = searchParams.get("loggedOut") === "1"
 
@@ -40,10 +42,16 @@ export default function LoginPage() {
       if (!res.ok) {
         setErrors(res.errors || {})
       } else {
-        const dest = res.role === "SALON" ? "/dashboard" : "/"
-        window.location.href = `/logging-in?redirect=${encodeURIComponent(dest)}`
+        // Credentials accepted: show the loading screen immediately, then do a full
+        // navigation (not router.push) so the layout re-renders with the new auth cookie.
+        setLoggedIn(true)
+        window.location.href = res.role === "SALON" ? "/dashboard" : "/"
       }
     })
+  }
+
+  if (loggedIn) {
+    return <LoggingInScreen />
   }
 
   return (
