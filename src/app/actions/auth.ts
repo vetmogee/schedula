@@ -5,6 +5,17 @@ import { supabase } from "@/lib/supabase/server"
 import { registerSchema, loginSchema, resetPasswordSchema } from "@/lib/auth-schemas"
 import { cookies } from "next/headers"
 
+// Public base URL used in auth email links (confirmation, password reset).
+// Must also be listed under Supabase → Authentication → URL Configuration.
+const SITE_URL = (process.env.SITE_URL || "https://schedula.mejlos.com").replace(/\/$/, "")
+
+function authEmailError(error: { code?: string; message?: string } | null, fallback: string) {
+  if (error?.code === "over_email_send_rate_limit") {
+    return "Too many emails were sent recently. Please try again in a little while."
+  }
+  return error?.message || fallback
+}
+
 /* ---------------- REGISTER (shared core) ---------------- */
 
 async function register(formData: FormData, role: "CUSTOMER" | "SALON") {
@@ -27,6 +38,7 @@ async function register(formData: FormData, role: "CUSTOMER" | "SALON") {
     email,
     password,
     options: {
+      emailRedirectTo: `${SITE_URL}/login`,
       data: {
         full_name: name,
         role,
@@ -37,7 +49,7 @@ async function register(formData: FormData, role: "CUSTOMER" | "SALON") {
   if (error || !auth.user) {
     return {
       ok: false,
-      errors: { email: [error?.message || "Unable to register user"] },
+      errors: { email: [authEmailError(error, "Unable to register user")] },
     }
   }
 
@@ -183,15 +195,15 @@ export async function resetPasswordAction(formData: FormData) {
 
   const { email } = parsed.data
 
-  // Send password reset email via Supabase - always use production URL when deployed
+  // Send password reset email via Supabase
   const { error } = await supabase.auth.resetPasswordForEmail(email, {
-    redirectTo: `https://schedula-murex.vercel.app/reset-password/confirm`,
+    redirectTo: `${SITE_URL}/reset-password/confirm`,
   })
 
   if (error) {
     return {
       ok: false,
-      errors: { email: [error.message || "Failed to send reset email"] },
+      errors: { email: [authEmailError(error, "Failed to send reset email")] },
     }
   }
 
