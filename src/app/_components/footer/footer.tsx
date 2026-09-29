@@ -52,6 +52,16 @@ export default function Footer() {
                                     Privacy Policy
                                 </Link>
                             </li>
+                            <li>
+                                <Link href="/terms" className="text-black/80 dark:text-muted-foreground hover:text-black dark:hover:text-foreground transition-colors text-sm">
+                                    Terms of Service
+                                </Link>
+                            </li>
+                            <li>
+                                <Link href="/cookies" className="text-black/80 dark:text-muted-foreground hover:text-black dark:hover:text-foreground transition-colors text-sm">
+                                    Cookie Policy
+                                </Link>
+                            </li>
                         </ul>
                     </div>
                 </div>
@@ -69,6 +79,12 @@ export default function Footer() {
                                 className="text-black/70 dark:text-muted-foreground hover:text-black dark:hover:text-foreground transition-colors text-sm"
                             >
                                 Privacy Policy
+                            </Link>
+                            <Link
+                                href="/terms"
+                                className="text-black/70 dark:text-muted-foreground hover:text-black dark:hover:text-foreground transition-colors text-sm"
+                            >
+                                Terms
                             </Link>
                         </div>
                     </div>

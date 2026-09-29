@@ -30,7 +30,7 @@ export default function CustomerRegisterPage() {
         setErrors(res.errors || {})
         return
       }
-      window.location.href = "/login"
+      window.location.href = "/confirm"
     })
   }
 
@@ -104,6 +104,12 @@ export default function CustomerRegisterPage() {
           <Button type="submit" disabled={isPending} className="w-full">
             {isPending ? "Creating..." : "Create account"}
           </Button>
+
+          <p className="text-xs text-center text-gray-500 dark:text-muted-foreground">
+            By creating an account, you agree to our{" "}
+            <Link href="/terms" className="underline hover:text-pink-600">Terms of Service</Link> and{" "}
+            <Link href="/privacy" className="underline hover:text-pink-600">Privacy Policy</Link>.
+          </p>
         </form>
 
         <div className="mt-4 text-center text-sm">

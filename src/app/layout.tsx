@@ -5,6 +5,7 @@ import Navbar from "./_components/navbar/navbar";
 import Footer from "./_components/footer/footer";
 import { ThemeProvider } from "./_components/theme-provider";
 import { Toaster } from "./_components/ui/sonner";
+import { CookieNotice } from "./_components/cookie-notice";
 import { cookies } from "next/headers";
 import { supabase } from "@/lib/supabase/server";
 import { prisma } from "@/lib/prisma";
@@ -73,6 +74,7 @@ export default async function RootLayout({
           {children}
           <Footer />
           <Toaster />
+          <CookieNotice />
         </ThemeProvider>
       </body>
     </html>

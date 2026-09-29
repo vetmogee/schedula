@@ -111,7 +111,7 @@ export default function PrivacyPolicy() {
             <section className="mb-8">
               <h2 className="text-2xl font-semibold text-gray-900 dark:text-foreground mb-4">7. Cookies and Tracking Technologies</h2>
               <p className="text-gray-700 dark:text-muted-foreground leading-relaxed mb-4">
-                We use cookies and similar tracking technologies to enhance your experience, analyze usage patterns, and improve our services. You can control cookie preferences through your browser settings, though this may affect some functionality of our platform.
+                We only use strictly necessary cookies and browser storage, to keep you signed in and remember your display preferences. We do not use analytics, advertising or tracking cookies. You can control cookies through your browser settings, though blocking them will prevent you from signing in. See our <Link href="/cookies" className="text-pink-600 hover:text-pink-700 underline">Cookie Policy</Link> for the full list.
               </p>
             </section>
 
