@@ -40,19 +40,17 @@ async function getCurrentCustomer() {
   }
 }
 
+// The counter lives in a single row with a fixed id.
+const LOOP_COUNTER_ID = 1;
+
 async function incrementLoopCounter() {
   try {
-    let loop = await prisma.loop.findFirst();
-    if (!loop) {
-      loop = await prisma.loop.create({
-        data: { count: 1 }
-      });
-    } else {
-      loop = await prisma.loop.update({
-        where: { id: loop.id },
-        data: { count: loop.count + 1 }
-      });
-    }
+    // One atomic statement: no lost increments under concurrent requests.
+    const loop = await prisma.loop.upsert({
+      where: { id: LOOP_COUNTER_ID },
+      create: { id: LOOP_COUNTER_ID, count: 1 },
+      update: { count: { increment: 1 } },
+    });
     return loop.count;
   } catch (error) {
     console.error("Error updating loop counter:", error);

@@ -7,7 +7,14 @@ declare global {
 // Create a new Prisma client instance with proper configuration
 const createPrismaClient = () => {
   return new PrismaClient({
-    log: process.env.NODE_ENV === "development" ? ["query", "error", "warn"] : ["error"],
+    // Per-query logging is noisy (the pgbouncer pooler wraps every query in
+    // BEGIN/DEALLOCATE ALL/COMMIT), so it's opt-in: PRISMA_LOG_QUERIES=1 npm run dev
+    log:
+      process.env.PRISMA_LOG_QUERIES === "1"
+        ? ["query", "error", "warn"]
+        : process.env.NODE_ENV === "development"
+          ? ["error", "warn"]
+          : ["error"],
     errorFormat: "pretty",
   })
 }
