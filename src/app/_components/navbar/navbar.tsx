@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useState, useRef, useEffect } from "react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Home, Paintbrush, Calendar, Menu, Settings, LogOut, BarChart3, UserCircle } from "lucide-react";
@@ -12,26 +13,48 @@ type CurrentUser = {
   salonId?: number;
 } | null;
 
+export type NavbarLinks = {
+  home: string;
+  salons: string;
+  bookings: string;
+  dashboard: string;
+  calendar: string;
+  services: string;
+  settings: string;
+  logout: string;
+  profile: (salonId: number) => string;
+};
+
+const DEFAULT_LINKS: NavbarLinks = {
+  home: "/",
+  salons: "/salons",
+  bookings: "/user",
+  dashboard: "/dashboard",
+  calendar: "/calendar",
+  services: "/services",
+  settings: "/settings",
+  logout: "/logout",
+  profile: (salonId) => `/salons/${salonId}`,
+};
+
 function Dropdown({
   label,
-  loginHref,
-  registerHref,
+  items,
 }: {
   label: string;
-  loginHref: string;
-  registerHref: string;
+  items: { label: string; href: string }[];
 }) {
   const [open, setOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
-  let timeout: NodeJS.Timeout;
+  const timeout = useRef<NodeJS.Timeout | undefined>(undefined);
 
   const openMenu = () => {
-    clearTimeout(timeout);
+    clearTimeout(timeout.current);
     setOpen(true);
   };
 
   const closeMenu = () => {
-    timeout = setTimeout(() => {
+    timeout.current = setTimeout(() => {
       setOpen(false);
     }, 120); // 👈 delay (tweak 80–200ms)
   };
@@ -59,39 +82,58 @@ function Dropdown({
       onMouseEnter={openMenu}
       onMouseLeave={closeMenu}
     >
-      <button className="font-medium hover:text-black/70 dark:hover:text-foreground/70 transition">
+      <button
+        type="button"
+        aria-haspopup="true"
+        aria-expanded={open}
+        className="h-10 px-2 flex items-center justify-center text-center rounded-lg font-medium hover:text-black/70 dark:hover:text-foreground/70 transition"
+      >
         {label}
       </button>
 
       {open && (
         <div className="absolute right-0 mt-2 w-36 rounded-lg bg-white dark:bg-card text-black dark:text-foreground shadow-lg overflow-hidden z-[100] border border-transparent dark:border-border">
-          <Link href={loginHref} className="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-accent">
-            Login
-          </Link>
-          <Link href={registerHref} className="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-accent">
-            Register
-          </Link>
+          {items.map((item) => (
+            <Link
+              key={item.href}
+              href={item.href}
+              onClick={() => setOpen(false)}
+              className="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-accent"
+            >
+              {item.label}
+            </Link>
+          ))}
         </div>
       )}
     </div>
   );
 }
 
-export default function Navbar({ currentUser }: { currentUser?: CurrentUser }) {
+export default function Navbar({
+  currentUser,
+  links = DEFAULT_LINKS,
+  isDemo = false,
+}: {
+  currentUser?: CurrentUser;
+  links?: NavbarLinks;
+  // The demo renders its own navbar, so the site-wide one steps aside on /demo
+  isDemo?: boolean;
+}) {
+  const pathname = usePathname();
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const isMobile = useIsMobile();
   const userMenuRef = useRef<HTMLDivElement>(null);
   const mobileMenuRef = useRef<HTMLDivElement>(null);
-  let userTimeout: NodeJS.Timeout;
+  const userTimeout = useRef<NodeJS.Timeout | undefined>(undefined);
 
   const openUserMenu = () => {
-    clearTimeout(userTimeout);
+    clearTimeout(userTimeout.current);
     setUserMenuOpen(true);
   };
 
   const closeUserMenu = () => {
-    userTimeout = setTimeout(() => {
+    userTimeout.current = setTimeout(() => {
       setUserMenuOpen(false);
     }, 120);
   };
@@ -128,57 +170,23 @@ export default function Navbar({ currentUser }: { currentUser?: CurrentUser }) {
     };
   }, [userMenuOpen, mobileMenuOpen]);
 
-  // Navigation links based on user role (for user menu)
-  const navLinks = currentUser && currentUser.role === "SALON" ? (
-    <>
-      <Link href="/dashboard" onClick={handleLinkClick} className="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-accent text-left w-full">
-        Dashboard
-      </Link>
-      <Link href="/calendar" onClick={handleLinkClick} className="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-accent text-left w-full">
-        Calendar
-      </Link>
-      <Link href="/services" onClick={handleLinkClick} className="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-accent text-left w-full">
-        Services
-      </Link>
-      {currentUser.salonId && (
-        <Link href={`/salons/${currentUser.salonId}`} onClick={handleLinkClick} className="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-accent text-left w-full">
-          My Profile
-        </Link>
-      )}
-    </>
-  ) : (
-    <>
-      <Link href="/" onClick={handleLinkClick} className="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-accent text-left w-full">
-        Home
-      </Link>
-      <Link href="/salons" onClick={handleLinkClick} className="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-accent text-left w-full">
-        Salons
-      </Link>
-      {currentUser && currentUser.role === "CUSTOMER" && (
-        <Link href="/user" onClick={handleLinkClick} className="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-accent text-left w-full">
-          Bookings
-        </Link>
-      )}
-    </>
-  );
-
   // Mobile navigation links with icons
   const mobileNavLinks = currentUser && currentUser.role === "SALON" ? (
     <>
-      <Link href="/dashboard" onClick={handleLinkClick} className="flex items-center gap-3 px-4 py-3 hover:bg-gray-100 dark:hover:bg-accent text-left w-full">
+      <Link href={links.dashboard} onClick={handleLinkClick} className="flex items-center gap-3 px-4 py-3 hover:bg-gray-100 dark:hover:bg-accent text-left w-full">
         <BarChart3 className="w-5 h-5" />
         <span>Dashboard</span>
       </Link>
-      <Link href="/calendar" onClick={handleLinkClick} className="flex items-center gap-3 px-4 py-3 hover:bg-gray-100 dark:hover:bg-accent text-left w-full">
+      <Link href={links.calendar} onClick={handleLinkClick} className="flex items-center gap-3 px-4 py-3 hover:bg-gray-100 dark:hover:bg-accent text-left w-full">
         <Calendar className="w-5 h-5" />
         <span>Calendar</span>
       </Link>
-      <Link href="/services" onClick={handleLinkClick} className="flex items-center gap-3 px-4 py-3 hover:bg-gray-100 dark:hover:bg-accent text-left w-full">
+      <Link href={links.services} onClick={handleLinkClick} className="flex items-center gap-3 px-4 py-3 hover:bg-gray-100 dark:hover:bg-accent text-left w-full">
         <Paintbrush className="w-5 h-5" />
         <span>Services</span>
       </Link>
       {currentUser.salonId && (
-        <Link href={`/salons/${currentUser.salonId}`} onClick={handleLinkClick} className="flex items-center gap-3 px-4 py-3 hover:bg-gray-100 dark:hover:bg-accent text-left w-full">
+        <Link href={links.profile(currentUser.salonId)} onClick={handleLinkClick} className="flex items-center gap-3 px-4 py-3 hover:bg-gray-100 dark:hover:bg-accent text-left w-full">
           <UserCircle className="w-5 h-5" />
           <span>My Profile</span>
         </Link>
@@ -186,16 +194,16 @@ export default function Navbar({ currentUser }: { currentUser?: CurrentUser }) {
     </>
   ) : (
     <>
-      <Link href="/" onClick={handleLinkClick} className="flex items-center gap-3 px-4 py-3 hover:bg-gray-100 dark:hover:bg-accent text-left w-full">
+      <Link href={links.home} onClick={handleLinkClick} className="flex items-center gap-3 px-4 py-3 hover:bg-gray-100 dark:hover:bg-accent text-left w-full">
         <Home className="w-5 h-5" />
         <span>Home</span>
       </Link>
-      <Link href="/salons" onClick={handleLinkClick} className="flex items-center gap-3 px-4 py-3 hover:bg-gray-100 dark:hover:bg-accent text-left w-full">
+      <Link href={links.salons} onClick={handleLinkClick} className="flex items-center gap-3 px-4 py-3 hover:bg-gray-100 dark:hover:bg-accent text-left w-full">
         <Paintbrush className="w-5 h-5" />
         <span>Salons</span>
       </Link>
       {currentUser && currentUser.role === "CUSTOMER" && (
-        <Link href="/user" onClick={handleLinkClick} className="flex items-center gap-3 px-4 py-3 hover:bg-gray-100 dark:hover:bg-accent text-left w-full">
+        <Link href={links.bookings} onClick={handleLinkClick} className="flex items-center gap-3 px-4 py-3 hover:bg-gray-100 dark:hover:bg-accent text-left w-full">
           <Calendar className="w-5 h-5" />
           <span>Bookings</span>
         </Link>
@@ -203,51 +211,55 @@ export default function Navbar({ currentUser }: { currentUser?: CurrentUser }) {
     </>
   );
 
+  if (!isDemo && pathname.startsWith("/demo")) {
+    return null;
+  }
+
   return (
-    <div className="relative z-50 w-full h-20 px-4 md:px-8 grid grid-cols-3 items-center border-b border-black/10 dark:border-border bg-[#ffb3c6] dark:bg-secondary backdrop-blur text-black dark:text-foreground">
+    <div className="relative z-50 w-full h-20 px-4 md:px-8 grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-2 md:gap-4 border-b border-black/10 dark:border-border bg-[#ffb3c6] dark:bg-secondary backdrop-blur text-black dark:text-foreground">
       {/* Left */}
       <Link 
-        href={currentUser && currentUser.role === "SALON" ? "/dashboard" : "/"} 
+        href={currentUser && currentUser.role === "SALON" ? links.dashboard : links.home} 
         className="text-base md:text-xl justify-self-start font-bold tracking-wide"
       >
         schedula
       </Link>
 
       {/* Center */}
-      <div className="flex justify-center items-center">
+      <div className="justify-self-center flex justify-center items-center">
         {currentUser && currentUser.role === "SALON" ? (
-          <div className="hidden md:flex gap-8 font-medium">
-            <Link href="/dashboard" className="hover:text-black/70 dark:hover:text-foreground/70 transition flex flex-col items-center gap-1">
+          <div className="hidden md:flex items-center md:gap-2 lg:gap-3 md:text-sm lg:text-base font-medium">
+            <Link href={links.dashboard} className="h-14 px-3 flex flex-col items-center justify-center gap-1 text-center rounded-lg hover:text-black/70 dark:hover:text-foreground/70 transition">
               <BarChart3 className="w-5 h-5" />
               <span>Dashboard</span>
             </Link>
-            <Link href="/calendar" className="hover:text-black/70 dark:hover:text-foreground/70 transition flex flex-col items-center gap-1">
+            <Link href={links.calendar} className="h-14 px-3 flex flex-col items-center justify-center gap-1 text-center rounded-lg hover:text-black/70 dark:hover:text-foreground/70 transition">
               <Calendar className="w-5 h-5" />
               <span>Calendar</span>
             </Link>
-            <Link href="/services" className="hover:text-black/70 dark:hover:text-foreground/70 transition flex flex-col items-center gap-1">
+            <Link href={links.services} className="h-14 px-3 flex flex-col items-center justify-center gap-1 text-center rounded-lg hover:text-black/70 dark:hover:text-foreground/70 transition">
               <Paintbrush className="w-5 h-5" />
               <span>Services</span>
             </Link>
             {currentUser.salonId && (
-              <Link href={`/salons/${currentUser.salonId}`} className="hover:text-black/70 dark:hover:text-foreground/70 transition flex flex-col items-center gap-1">
+              <Link href={links.profile(currentUser.salonId)} className="h-14 px-3 flex flex-col items-center justify-center gap-1 text-center rounded-lg hover:text-black/70 dark:hover:text-foreground/70 transition">
                 <UserCircle className="w-5 h-5" />
                 <span>My Profile</span>
               </Link>
             )}
           </div>
         ) : (
-          <div className="hidden md:grid md:grid-cols-3 gap-8 font-medium place-items-center">
-            <Link href="/" className="hover:text-black/70 dark:hover:text-foreground/70 transition flex flex-col items-center gap-1">
+          <div className="hidden md:flex items-center md:gap-2 lg:gap-3 md:text-sm lg:text-base font-medium">
+            <Link href={links.home} className="h-14 px-3 flex flex-col items-center justify-center gap-1 text-center rounded-lg hover:text-black/70 dark:hover:text-foreground/70 transition">
               <Home className="w-5 h-5" />
               <span>Home</span>
             </Link>
-            <Link href="/salons" className="hover:text-black/70 dark:hover:text-foreground/70 transition flex flex-col items-center gap-1">
+            <Link href={links.salons} className="h-14 px-3 flex flex-col items-center justify-center gap-1 text-center rounded-lg hover:text-black/70 dark:hover:text-foreground/70 transition">
               <Paintbrush className="w-5 h-5" />
               <span>Salons</span>
             </Link>
             {currentUser && currentUser.role === "CUSTOMER" && (
-              <Link href="/user" className="hover:text-black/70 dark:hover:text-foreground/70 transition flex flex-col items-center gap-1">
+              <Link href={links.bookings} className="h-14 px-3 flex flex-col items-center justify-center gap-1 text-center rounded-lg hover:text-black/70 dark:hover:text-foreground/70 transition">
                 <Calendar className="w-5 h-5" />
                 <span>Bookings</span>
               </Link>
@@ -257,7 +269,7 @@ export default function Navbar({ currentUser }: { currentUser?: CurrentUser }) {
       </div>
 
       {/* Right */}
-      <div className="flex gap-4 items-center justify-self-end">
+      <div className="flex items-center justify-self-end gap-2 md:gap-3">
         {currentUser ? (
           <div
             ref={userMenuRef}
@@ -265,12 +277,16 @@ export default function Navbar({ currentUser }: { currentUser?: CurrentUser }) {
             onMouseEnter={!isMobile ? openUserMenu : undefined}
             onMouseLeave={!isMobile ? closeUserMenu : undefined}
           >
-            <button 
+            <button
+              type="button"
+              aria-haspopup="true"
+              aria-expanded={userMenuOpen}
               onClick={isMobile ? toggleUserMenu : undefined}
-              className="font-medium flex items-center gap-2 hover:text-black/70 dark:hover:text-foreground/70 transition"
+              title={currentUser.name ?? "User"}
+              className="h-10 md:w-40 lg:w-52 px-2 rounded-lg font-medium flex items-center justify-center gap-2 hover:text-black/70 dark:hover:text-foreground/70 transition"
             >
-              <span>{currentUser.name ?? "User"}</span>
-              <span className="uppercase text-xs px-2 py-1 rounded-full bg-white/70 dark:bg-accent text-black dark:text-foreground">
+              <span className="min-w-0 truncate max-w-[6rem] sm:max-w-[12rem] md:max-w-none">{currentUser.name ?? "User"}</span>
+              <span className="shrink-0 uppercase text-xs px-2 py-1 rounded-full bg-white/70 dark:bg-accent text-black dark:text-foreground">
                 {currentUser.role}
               </span>
             </button>
@@ -280,20 +296,20 @@ export default function Navbar({ currentUser }: { currentUser?: CurrentUser }) {
                 {/* Navigation links - shown on mobile for salon users */}
                 {isMobile && currentUser && currentUser.role === "SALON" && (
                   <>
-                    <Link href="/dashboard" onClick={handleLinkClick} className="flex items-center gap-2 px-4 py-2 hover:bg-gray-100 dark:hover:bg-accent text-left w-full">
+                    <Link href={links.dashboard} onClick={handleLinkClick} className="flex items-center gap-2 px-4 py-2 hover:bg-gray-100 dark:hover:bg-accent text-left w-full">
                       <BarChart3 className="w-4 h-4" />
                       <span>Dashboard</span>
                     </Link>
-                    <Link href="/calendar" onClick={handleLinkClick} className="flex items-center gap-2 px-4 py-2 hover:bg-gray-100 dark:hover:bg-accent text-left w-full">
+                    <Link href={links.calendar} onClick={handleLinkClick} className="flex items-center gap-2 px-4 py-2 hover:bg-gray-100 dark:hover:bg-accent text-left w-full">
                       <Calendar className="w-4 h-4" />
                       <span>Calendar</span>
                     </Link>
-                    <Link href="/services" onClick={handleLinkClick} className="flex items-center gap-2 px-4 py-2 hover:bg-gray-100 dark:hover:bg-accent text-left w-full">
+                    <Link href={links.services} onClick={handleLinkClick} className="flex items-center gap-2 px-4 py-2 hover:bg-gray-100 dark:hover:bg-accent text-left w-full">
                       <Paintbrush className="w-4 h-4" />
                       <span>Services</span>
                     </Link>
                     {currentUser.salonId && (
-                      <Link href={`/salons/${currentUser.salonId}`} onClick={handleLinkClick} className="flex items-center gap-2 px-4 py-2 hover:bg-gray-100 dark:hover:bg-accent text-left w-full">
+                      <Link href={links.profile(currentUser.salonId)} onClick={handleLinkClick} className="flex items-center gap-2 px-4 py-2 hover:bg-gray-100 dark:hover:bg-accent text-left w-full">
                         <UserCircle className="w-4 h-4" />
                         <span>My Profile</span>
                       </Link>
@@ -302,7 +318,7 @@ export default function Navbar({ currentUser }: { currentUser?: CurrentUser }) {
                   </>
                 )}
                 <Link
-                  href="/settings"
+                  href={links.settings}
                   onClick={handleLinkClick}
                   className="flex items-center gap-2 px-4 py-2 hover:bg-gray-100 dark:hover:bg-accent text-left w-full"
                 >
@@ -310,7 +326,7 @@ export default function Navbar({ currentUser }: { currentUser?: CurrentUser }) {
                   <span>Settings</span>
                 </Link>
                 <a
-                  href="/logout"
+                  href={links.logout}
                   onClick={handleLinkClick}
                   className="flex items-center gap-2 px-4 py-2 hover:bg-gray-100 dark:hover:bg-accent text-left w-full"
                 >
@@ -326,9 +342,11 @@ export default function Navbar({ currentUser }: { currentUser?: CurrentUser }) {
             {isMobile ? (
               <div ref={mobileMenuRef} className="relative">
                 <button
+                  type="button"
                   onClick={toggleMobileMenu}
-                  className="p-2 hover:bg-white/20 dark:hover:bg-accent/50 rounded-lg transition"
+                  className="h-10 w-10 flex items-center justify-center hover:bg-white/20 dark:hover:bg-accent/50 rounded-lg transition"
                   aria-label="Menu"
+                  aria-expanded={mobileMenuOpen}
                 >
                   <Menu className="w-6 h-6" />
                 </button>
@@ -351,15 +369,18 @@ export default function Navbar({ currentUser }: { currentUser?: CurrentUser }) {
               </div>
             ) : (
               <>
+                <Link
+                  href="/login"
+                  className="h-10 px-2 flex items-center justify-center text-center rounded-lg font-medium hover:text-black/70 dark:hover:text-foreground/70 transition"
+                >
+                  Login
+                </Link>
                 <Dropdown
-                  label="Customer"
-                  loginHref="/login"
-                  registerHref="/register"
-                />
-                <Dropdown
-                  label="Business"
-                  loginHref="/login"
-                  registerHref="/salon-register"
+                  label="Register"
+                  items={[
+                    { label: "Customer", href: "/register" },
+                    { label: "Business", href: "/salon-register" },
+                  ]}
                 />
               </>
             )}
